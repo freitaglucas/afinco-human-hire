@@ -315,7 +315,7 @@ const RecruiterDashboard = () => {
                                   variant="outline" 
                                   size="sm" 
                                   className="flex-1 text-xs h-8"
-                                  onClick={() => toast({ title: "Perfil visualizado" })}
+                                  onClick={() => window.open(`/profile/${candidate.id}/hr`, '_blank')}
                                 >
                                   <Eye className="w-3 h-3 mr-1" />
                                   Ver Perfil

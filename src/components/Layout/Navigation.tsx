@@ -26,6 +26,14 @@ export const Navigation = () => {
               Encontrar Vagas
             </Link>
             <Link 
+              to="/profile/1/candidate" 
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                location.pathname.includes('/profile') ? 'text-primary' : 'text-foreground/70'
+              }`}
+            >
+              Meu Perfil
+            </Link>
+            <Link 
               to="/recruiter" 
               className={`text-sm font-medium transition-colors hover:text-secondary ${
                 location.pathname === '/recruiter' ? 'text-secondary' : 'text-foreground/70'
