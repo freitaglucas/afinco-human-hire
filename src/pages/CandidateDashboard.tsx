@@ -12,7 +12,9 @@ import {
   CheckCircle, 
   X,
   Search,
-  Filter
+  Filter,
+  Grid3x3,
+  Zap
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -104,6 +106,7 @@ const mockApplications = [
 const CandidateDashboard = () => {
   const [currentJobIndex, setCurrentJobIndex] = useState(0);
   const [jobs, setJobs] = useState(mockJobs);
+  const [viewMode, setViewMode] = useState<'swipe' | 'serious'>('swipe');
 
   const handleLike = (jobId: string) => {
     const job = jobs.find(j => j.id === jobId);
@@ -200,48 +203,107 @@ const CandidateDashboard = () => {
 
           {/* Job Discovery Tab */}
           <TabsContent value="discover" className="space-y-6">
-            <div className="text-center">
-              <div className="flex justify-center mb-6">
-                {currentJob ? (
-                  <JobCard
-                    job={currentJob}
-                    onLike={handleLike}
-                    onDislike={handleDislike}
-                    variant="swipe"
-                  />
-                ) : (
-                  <Card className="w-full max-w-md mx-auto">
-                    <CardContent className="p-12 text-center space-y-4">
-                      <div className="w-16 h-16 mx-auto bg-primary/20 rounded-full flex items-center justify-center">
-                        <Heart className="w-8 h-8 text-primary" />
-                      </div>
-                      <h3 className="text-xl font-semibold">Parabéns!</h3>
-                      <p className="text-muted-foreground">
-                        Você viu todas as vagas disponíveis. Novas oportunidades 
-                        aparecem regularmente!
-                      </p>
-                      <Button variant="candidate" onClick={() => setCurrentJobIndex(0)}>
-                        Ver Vagas Novamente
-                      </Button>
-                    </CardContent>
-                  </Card>
+            {/* View Mode Toggle */}
+            <div className="flex justify-center mb-6">
+              <div className="bg-muted/50 p-1 rounded-lg flex">
+                <Button
+                  variant={viewMode === 'swipe' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('swipe')}
+                  className="flex items-center gap-2"
+                >
+                  <Zap className="w-4 h-4" />
+                  Modo Swipe
+                </Button>
+                <Button
+                  variant={viewMode === 'serious' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('serious')}
+                  className="flex items-center gap-2"
+                >
+                  <Grid3x3 className="w-4 h-4" />
+                  Visualização Serious
+                </Button>
+              </div>
+            </div>
+
+            {/* Swipe Mode */}
+            {viewMode === 'swipe' && (
+              <div className="text-center">
+                <div className="flex justify-center mb-6">
+                  {currentJob ? (
+                    <JobCard
+                      job={currentJob}
+                      onLike={handleLike}
+                      onDislike={handleDislike}
+                      variant="swipe"
+                    />
+                  ) : (
+                    <Card className="w-full max-w-md mx-auto">
+                      <CardContent className="p-12 text-center space-y-4">
+                        <div className="w-16 h-16 mx-auto bg-primary/20 rounded-full flex items-center justify-center">
+                          <Heart className="w-8 h-8 text-primary" />
+                        </div>
+                        <h3 className="text-xl font-semibold">Parabéns!</h3>
+                        <p className="text-muted-foreground">
+                          Você viu todas as vagas disponíveis. Novas oportunidades 
+                          aparecem regularmente!
+                        </p>
+                        <Button variant="candidate" onClick={() => setCurrentJobIndex(0)}>
+                          Ver Vagas Novamente
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
+                {/* Progress Indicator */}
+                {currentJob && (
+                  <div className="flex justify-center space-x-2">
+                    {jobs.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          index === currentJobIndex ? 'bg-primary' : 'bg-muted'
+                        }`}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
+            )}
 
-              {/* Progress Indicator */}
-              {currentJob && (
-                <div className="flex justify-center space-x-2">
-                  {jobs.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-colors ${
-                        index === currentJobIndex ? 'bg-primary' : 'bg-muted'
-                      }`}
+            {/* Serious Mode */}
+            {viewMode === 'serious' && (
+              <div className="space-y-6">
+                {/* Filters */}
+                <div className="flex flex-wrap gap-4 justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Filtros:</span>
+                    <Badge variant="outline">Todas as áreas</Badge>
+                    <Badge variant="outline">Remoto/Presencial</Badge>
+                    <Badge variant="outline">Match Score &gt; 70%</Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {jobs.length} vagas encontradas
+                  </div>
+                </div>
+
+                {/* Jobs Grid */}
+                <div className="grid gap-6">
+                  {jobs.map((job) => (
+                    <JobCard
+                      key={job.id}
+                      job={job}
+                      onLike={handleLike}
+                      onDislike={handleDislike}
+                      variant="list"
                     />
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Tips Card */}
             <Card className="max-w-2xl mx-auto bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">

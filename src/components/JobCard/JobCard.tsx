@@ -46,6 +46,68 @@ export const JobCard: React.FC<JobCardProps> = ({
     onDislike?.(job.id);
   };
 
+  // List variant for serious mode
+  if (variant === 'list') {
+    return (
+      <Card className="hover:shadow-lg transition-shadow duration-300 border-border/50 hover:border-primary/20">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl font-semibold">{job.title}</h3>
+                <MatchScore score={job.matchScore} size="sm" />
+              </div>
+              <p className="text-muted-foreground mb-1">{job.company}</p>
+              <p className="text-sm text-muted-foreground">{job.location} • {job.type}</p>
+            </div>
+            <div className="text-right">
+              <p className="font-semibold text-primary">{job.salary}</p>
+              <p className="text-xs text-muted-foreground">{job.postedAt}</p>
+            </div>
+          </div>
+
+          <p className="text-muted-foreground mb-4 line-clamp-2">{job.description}</p>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            {job.requirements.slice(0, 4).map((req, index) => (
+              <Badge key={index} variant="secondary" className="text-xs">
+                {req}
+              </Badge>
+            ))}
+            {job.requirements.length > 4 && (
+              <Badge variant="outline" className="text-xs">
+                +{job.requirements.length - 4} mais
+              </Badge>
+            )}
+          </div>
+
+          {showActions && (
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleDislike}
+                className="flex-1 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Não Interessado
+              </Button>
+              <Button 
+                variant="candidate" 
+                size="sm" 
+                onClick={handleLike}
+                className="flex-1"
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                Tenho Interesse
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (variant === 'swipe') {
     return (
       <Card className="swipe-card w-full max-w-md mx-auto bg-gradient-to-br from-white to-muted/20 border-0 shadow-lg">

@@ -7,6 +7,7 @@ import Landing from "./pages/Landing";
 import CandidateDashboard from "./pages/CandidateDashboard";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import CandidateProfile from "./pages/CandidateProfile";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/jobs" element={<CandidateDashboard />} />
           <Route path="/recruiter" element={<RecruiterDashboard />} />
           <Route path="/profile/:id/:view" element={<CandidateProfile />} />
+          <Route path="/about" element={<About />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
