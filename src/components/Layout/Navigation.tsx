@@ -1,10 +1,19 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 import afinLogo from '@/assets/afin-logo.png';
+import { useAuth } from '@/hooks/useAuth';
 
 export const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <nav className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
@@ -51,12 +60,21 @@ export const Navigation = () => {
 
           {/* CTA Buttons */}
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login">Entrar</Link>
-            </Button>
-            <Button variant="hero" size="sm" asChild>
-              <Link to="/register">Começar Grátis</Link>
-            </Button>
+            {user ? (
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/auth">Entrar</Link>
+                </Button>
+                <Button variant="hero" size="sm" asChild>
+                  <Link to="/auth">Começar Grátis</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

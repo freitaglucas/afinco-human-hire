@@ -8,6 +8,7 @@ import CandidateDashboard from "./pages/CandidateDashboard";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import CandidateProfile from "./pages/CandidateProfile";
 import About from "./pages/About";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/jobs" element={<CandidateDashboard />} />
           <Route path="/recruiter" element={<RecruiterDashboard />} />
           <Route path="/profile/:id/:view" element={<CandidateProfile />} />
