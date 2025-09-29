@@ -8,6 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { MatchScore } from '@/components/MatchScore/MatchScore';
+import { CandidateProfileModal } from '@/components/RecruiterDashboard/CandidateProfileModal';
+import { TalentPoolSection } from '@/components/RecruiterDashboard/TalentPoolSection';
+import { BusinessPartnerSection } from '@/components/RecruiterDashboard/BusinessPartnerSection';
 import { 
   Plus, 
   Users, 
@@ -20,7 +23,9 @@ import {
   UserX,
   Eye,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Star,
+  Building2
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -93,6 +98,35 @@ const RecruiterDashboard = () => {
   const [candidates, setCandidates] = useState(mockCandidates);
   const [selectedJob, setSelectedJob] = useState('Desenvolvedor Full Stack Senior');
   const [showJobForm, setShowJobForm] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [showCandidateModal, setShowCandidateModal] = useState(false);
+
+  // Mock data for clickable stats
+  const [activeJobsData] = useState([
+    { id: 1, title: 'Desenvolvedor Full Stack Senior', applications: 15, status: 'active' },
+    { id: 2, title: 'Product Designer', applications: 8, status: 'active' },
+    { id: 3, title: 'DevOps Engineer', applications: 24, status: 'active' }
+  ]);
+
+  const handleViewCandidate = (candidate: any) => {
+    setSelectedCandidate(candidate);
+    setShowCandidateModal(true);
+  };
+
+  const handleStatsClick = (type: string) => {
+    switch (type) {
+      case 'jobs':
+        // Navigate to jobs tab or show jobs modal
+        toast({ title: "Vagas Ativas", description: "Visualizando todas as vagas ativas" });
+        break;
+      case 'applications':
+        toast({ title: "Candidaturas", description: "Visualizando todas as candidaturas" });
+        break;
+      case 'interviews':
+        toast({ title: "Entrevistas", description: "Visualizando entrevistas agendadas" });
+        break;
+    }
+  };
 
   const getStageInfo = (stage: string) => {
     switch (stage) {
@@ -172,7 +206,7 @@ const RecruiterDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="cursor-pointer hover:shadow-md transition-all duration-200" onClick={() => handleStatsClick('jobs')}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -184,7 +218,7 @@ const RecruiterDashboard = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="cursor-pointer hover:shadow-md transition-all duration-200" onClick={() => handleStatsClick('applications')}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -196,7 +230,7 @@ const RecruiterDashboard = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="cursor-pointer hover:shadow-md transition-all duration-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -208,7 +242,7 @@ const RecruiterDashboard = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="cursor-pointer hover:shadow-md transition-all duration-200" onClick={() => handleStatsClick('interviews')}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -224,6 +258,8 @@ const RecruiterDashboard = () => {
         <Tabs defaultValue="pipeline" className="space-y-6">
           <TabsList>
             <TabsTrigger value="pipeline">Pipeline de Talentos</TabsTrigger>
+            <TabsTrigger value="talent-pool">Banco de Talentos</TabsTrigger>
+            <TabsTrigger value="business">Business Partner</TabsTrigger>
             <TabsTrigger value="jobs">Minhas Vagas</TabsTrigger>
           </TabsList>
 
@@ -311,15 +347,15 @@ const RecruiterDashboard = () => {
 
                               {/* Actions */}
                               <div className="flex gap-2 pt-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="flex-1 text-xs h-8"
-                                  onClick={() => window.open(`/profile/${candidate.id}/hr`, '_blank')}
-                                >
-                                  <Eye className="w-3 h-3 mr-1" />
-                                  Ver Perfil
-                                </Button>
+                                 <Button 
+                                   variant="outline" 
+                                   size="sm" 
+                                   className="flex-1 text-xs h-8"
+                                   onClick={() => handleViewCandidate(candidate)}
+                                 >
+                                   <Eye className="w-3 h-3 mr-1" />
+                                   Ver Perfil
+                                 </Button>
                                 
                                 {stage === 'new' && (
                                   <Button 
@@ -394,6 +430,16 @@ const RecruiterDashboard = () => {
             </div>
           </TabsContent>
 
+          {/* Talent Pool */}
+          <TabsContent value="talent-pool" className="space-y-6">
+            <TalentPoolSection />
+          </TabsContent>
+
+          {/* Business Partner */}
+          <TabsContent value="business" className="space-y-6">
+            <BusinessPartnerSection />
+          </TabsContent>
+
           {/* Jobs Management */}
           <TabsContent value="jobs" className="space-y-6">
             <Card>
@@ -465,6 +511,14 @@ const RecruiterDashboard = () => {
         )}
 
         {showJobForm && <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setShowJobForm(false)} />}
+
+        {/* Candidate Profile Modal */}
+        <CandidateProfileModal
+          candidate={selectedCandidate}
+          isOpen={showCandidateModal}
+          onClose={() => setShowCandidateModal(false)}
+          onMoveCandidate={handleMoveCandidate}
+        />
       </div>
     </div>
   );
