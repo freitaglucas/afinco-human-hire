@@ -29,63 +29,8 @@ import {
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
-// Mock data for candidates
-const mockCandidates = [
-  {
-    id: '1',
-    name: 'Ana Silva',
-    title: 'Desenvolvedora Full Stack',
-    location: 'São Paulo, SP',
-    matchScore: 87,
-    avatar: null,
-    experience: '5 anos',
-    skills: ['React', 'Node.js', 'TypeScript', 'AWS'],
-    stage: 'new',
-    appliedAt: '2 horas atrás',
-    matchFactors: {
-      technical: ['Excelente aderência em React e TypeScript'],
-      experience: ['5+ anos de experiência compatível'],
-      education: ['Formação em Ciência da Computação'],
-      opportunities: ['Liderança técnica']
-    }
-  },
-  {
-    id: '2',
-    name: 'Carlos Santos',
-    title: 'Desenvolvedor Backend Senior',
-    location: 'Remote',
-    matchScore: 91,
-    avatar: null,
-    experience: '7 anos',
-    skills: ['Node.js', 'Python', 'PostgreSQL', 'Docker'],
-    stage: 'review',
-    appliedAt: '1 dia atrás',
-    matchFactors: {
-      technical: ['Expert em Node.js e Python'],
-      experience: ['7+ anos de experiência'],
-      education: ['Mestrado em Computação'],
-      opportunities: ['Arquitetura de sistemas']
-    }
-  },
-  {
-    id: '3',
-    name: 'Maria Oliveira',
-    title: 'Frontend Developer',
-    location: 'Rio de Janeiro, RJ',
-    matchScore: 73,
-    avatar: null,
-    experience: '3 anos',
-    skills: ['React', 'Vue.js', 'CSS', 'Figma'],
-    stage: 'interview',
-    appliedAt: '3 dias atrás',
-    matchFactors: {
-      technical: ['Forte em React e Vue.js'],
-      experience: ['3+ anos focado em frontend'],
-      education: ['Design Digital'],
-      opportunities: ['Transição para full-stack']
-    }
-  }
-];
+// Mock data for candidates - will be replaced with real data from applications
+const mockCandidates: any[] = [];
 
 const mockJobStats = {
   activeJobs: 3,

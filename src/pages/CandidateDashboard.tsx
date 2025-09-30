@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigation } from '@/components/Layout/Navigation';
 import { JobCard } from '@/components/JobCard/JobCard';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,8 @@ import {
   Zap
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock data for demonstration
 const mockJobs = [
@@ -104,9 +106,31 @@ const mockApplications = [
 ];
 
 const CandidateDashboard = () => {
+  const { user } = useAuth();
   const [currentJobIndex, setCurrentJobIndex] = useState(0);
   const [jobs, setJobs] = useState(mockJobs);
   const [viewMode, setViewMode] = useState<'swipe' | 'serious'>('swipe');
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+      
+      if (data && !error) {
+        setUserName(data.full_name || user.email?.split('@')[0] || 'Usuário');
+      } else {
+        setUserName(user.email?.split('@')[0] || 'Usuário');
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   const handleLike = (jobId: string) => {
     const job = jobs.find(j => j.id === jobId);
@@ -183,7 +207,7 @@ const CandidateDashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Bem-vinda, Ana! 👋</h1>
+          <h1 className="text-3xl font-bold mb-2">Bem-vindo(a), {userName}! 👋</h1>
           <p className="text-muted-foreground">
             Encontramos <span className="font-semibold text-primary">{jobs.length} vagas</span> perfeitas para seu perfil
           </p>

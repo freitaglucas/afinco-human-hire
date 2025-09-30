@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Navigation } from '@/components/Layout/Navigation';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,8 @@ import {
   UserCheck
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock data - in real app this would come from API
 const mockCandidateData = {
@@ -227,12 +229,120 @@ const mockCandidateData = {
 };
 
 const CandidateProfile = () => {
-  const { id, view } = useParams(); // view can be 'hr' or 'candidate'
+  const { id, view } = useParams();
+  const { user } = useAuth();
   const [selectedStageModal, setSelectedStageModal] = useState<typeof mockCandidateData.applicationStages[0] | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [candidateData, setCandidateData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   const isHRView = view === 'hr';
-  const candidate = mockCandidateData; // In real app, fetch by id
+
+  useEffect(() => {
+    const fetchCandidateData = async () => {
+      try {
+        setLoading(true);
+        const profileId = id || user?.id;
+        
+        if (!profileId) {
+          toast({
+            title: "Erro",
+            description: "Usuário não encontrado",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', profileId)
+          .single();
+
+        if (profileError) throw profileError;
+
+        const { data: candidateProfile, error: candidateError } = await supabase
+          .from('candidate_profiles')
+          .select('*')
+          .eq('user_id', profileId)
+          .maybeSingle();
+
+        if (candidateError) throw candidateError;
+
+        // Combine profile and candidate_profile data
+        setCandidateData({
+          id: profile.id,
+          name: profile.full_name || 'Usuário',
+          title: candidateProfile?.current_position || 'Profissional',
+          location: candidateProfile?.location || 'Não informado',
+          email: profile.email,
+          phone: candidateProfile?.phone || '',
+          avatar: profile.avatar_url,
+          bio: 'Perfil em construção',
+          experience: [],
+          education: [],
+          technicalSkills: candidateProfile?.skills?.map((skill: string) => ({
+            name: skill,
+            level: 70,
+            years: 2
+          })) || [],
+          softSkills: [],
+          projects: [],
+          growthOpportunities: [],
+          seniorityAssessment: {
+            overall: 'Pleno',
+            technical: 70,
+            leadership: 60,
+            communication: 70,
+            problemSolving: 70,
+            learning: 75,
+            areas: []
+          },
+          applicationStages: [],
+          socialLinks: {
+            linkedin: candidateProfile?.linkedin_url || '',
+            github: '',
+            website: ''
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching candidate data:', error);
+        toast({
+          title: "Erro ao carregar perfil",
+          description: "Não foi possível carregar os dados do perfil",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCandidateData();
+  }, [id, user]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">Carregando...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!candidateData) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">Perfil não encontrado</div>
+        </div>
+      </div>
+    );
+  }
+
+  const candidate = candidateData;
 
   const getStageStatus = (stage: any) => {
     if (stage.status === 'completed') return { color: 'text-green-600', icon: CheckCircle };
