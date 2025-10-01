@@ -291,23 +291,33 @@ const CandidateProfile = () => {
 
         if (candidateError) throw candidateError;
 
+        if (!candidateProfile) {
+          toast({
+            title: "Perfil incompleto",
+            description: "Complete seu perfil de candidato para continuar",
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
+
         // Combine profile and candidate_profile data
-        setCandidateData({
+        const combinedData = {
           id: profile.id,
           name: profile.full_name || 'Usuário',
           title: candidateProfile?.current_position || 'Profissional',
           location: candidateProfile?.location || 'Não informado',
-          email: profile.email,
+          email: profile.email || '',
           phone: candidateProfile?.phone || '',
-          avatar: profile.avatar_url,
+          avatar: profile.avatar_url || null,
           bio: 'Perfil em construção',
           experience: [],
           education: [],
-          technicalSkills: candidateProfile?.skills?.map((skill: string) => ({
+          technicalSkills: (candidateProfile?.skills || []).map((skill: string) => ({
             name: skill,
             level: 70,
             years: 2
-          })) || [],
+          })),
           softSkills: [],
           projects: [],
           growthOpportunities: [],
@@ -326,7 +336,9 @@ const CandidateProfile = () => {
             github: '',
             website: ''
           }
-        });
+        };
+
+        setCandidateData(combinedData);
       } catch (error) {
         console.error('Error fetching candidate data:', error);
         toast({
@@ -353,12 +365,14 @@ const CandidateProfile = () => {
     );
   }
 
-  if (!candidateData) {
+  if (!candidateData || !candidateData.name || !candidateData.title) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">Perfil não encontrado</div>
+          <div className="text-center">
+            {loading ? "Carregando..." : "Perfil não encontrado ou incompleto"}
+          </div>
         </div>
       </div>
     );
@@ -497,18 +511,22 @@ const CandidateProfile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-semibold">{candidate.experience[0].title}</h4>
-                      <p className="text-sm text-muted-foreground">{candidate.experience[0].company} • {candidate.experience[0].period}</p>
+                  {candidate.experience && candidate.experience.length > 0 ? (
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-semibold">{candidate.experience[0].title}</h4>
+                        <p className="text-sm text-muted-foreground">{candidate.experience[0].company} • {candidate.experience[0].period}</p>
+                      </div>
+                      <p className="text-sm">{candidate.experience[0].description}</p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {candidate.experience[0].skills?.map((skill, index) => (
+                          <Badge key={index} variant="outline">{skill}</Badge>
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-sm">{candidate.experience[0].description}</p>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {candidate.experience[0].skills.map((skill, index) => (
-                        <Badge key={index} variant="outline">{skill}</Badge>
-                      ))}
-                    </div>
-                  </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Nenhuma experiência cadastrada</p>
+                  )}
                 </CardContent>
               </Card>
             </div>
