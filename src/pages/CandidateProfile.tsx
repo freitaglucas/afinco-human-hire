@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Navigation } from '@/components/Layout/Navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { CandidateStageModal } from '@/components/CandidateProfile/CandidateStageModal';
 import { 
   User, 
@@ -365,14 +368,166 @@ const CandidateProfile = () => {
     );
   }
 
+  const [showProfileForm, setShowProfileForm] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+
+  const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setFormLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      const data = {
+        currentPosition: formData.get("currentPosition") as string,
+        location: formData.get("location") as string,
+        phone: formData.get("phone") as string,
+        skills: formData.get("skills") as string,
+        desiredPositions: formData.get("desiredPositions") as string,
+        yearsOfExperience: parseInt(formData.get("yearsOfExperience") as string) || 0,
+      };
+
+      const skillsArray = data.skills.split(",").map(s => s.trim()).filter(Boolean);
+      const desiredPositionsArray = data.desiredPositions.split(",").map(s => s.trim()).filter(Boolean);
+
+      const { error } = await supabase
+        .from("candidate_profiles")
+        .upsert({
+          user_id: user?.id,
+          current_position: data.currentPosition,
+          location: data.location,
+          phone: data.phone || null,
+          skills: skillsArray,
+          desired_positions: desiredPositionsArray,
+          years_of_experience: data.yearsOfExperience,
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Perfil criado!",
+        description: "Seu perfil foi configurado com sucesso.",
+      });
+
+      // Reload the page to show the profile
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao salvar perfil",
+        description: error.message || "Tente novamente",
+        variant: "destructive",
+      });
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
   if (!candidateData || !candidateData.name || !candidateData.title) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            {loading ? "Carregando..." : "Perfil não encontrado ou incompleto"}
-          </div>
+          {!showProfileForm ? (
+            <Card className="max-w-2xl mx-auto">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl">Perfil não encontrado</CardTitle>
+                <CardDescription>Complete seu perfil para começar a usar a plataforma</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <Button onClick={() => setShowProfileForm(true)} size="lg">
+                  Criar perfil
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="max-w-2xl mx-auto">
+              <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-bold">Complete seu perfil</CardTitle>
+                <CardDescription>Preencha as informações para começar a usar a plataforma</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleProfileSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPosition">Cargo Atual *</Label>
+                    <Input
+                      id="currentPosition"
+                      name="currentPosition"
+                      placeholder="Ex: Desenvolvedor Frontend"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Localização *</Label>
+                    <Input
+                      id="location"
+                      name="location"
+                      placeholder="Ex: São Paulo, SP"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Telefone</Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="(11) 99999-9999"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="skills">Habilidades * (separadas por vírgula)</Label>
+                    <Textarea
+                      id="skills"
+                      name="skills"
+                      placeholder="Ex: React, TypeScript, Node.js"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="desiredPositions">Cargos Desejados * (separados por vírgula)</Label>
+                    <Textarea
+                      id="desiredPositions"
+                      name="desiredPositions"
+                      placeholder="Ex: Desenvolvedor Senior, Tech Lead"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="yearsOfExperience">Anos de Experiência *</Label>
+                    <Input
+                      id="yearsOfExperience"
+                      name="yearsOfExperience"
+                      type="number"
+                      min="0"
+                      defaultValue="0"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setShowProfileForm(false)}
+                      className="flex-1"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button type="submit" className="flex-1" disabled={formLoading}>
+                      {formLoading ? "Salvando..." : "Criar perfil"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     );
