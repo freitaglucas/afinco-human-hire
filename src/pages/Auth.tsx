@@ -64,11 +64,49 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // Check if profile is complete
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data: userRole } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+
+        if (userRole?.role === "candidate") {
+          const { data: profile } = await supabase
+            .from("candidate_profiles")
+            .select("current_position, location, skills")
+            .eq("user_id", user.id)
+            .single();
+
+          if (!profile?.current_position || !profile?.location || !profile?.skills?.length) {
+            navigate("/onboarding/candidate");
+            return;
+          }
+          navigate("/jobs");
+        } else if (userRole?.role === "recruiter") {
+          const { data: profile } = await supabase
+            .from("recruiter_profiles")
+            .select("company_name, position")
+            .eq("user_id", user.id)
+            .single();
+
+          if (!profile?.company_name || !profile?.position) {
+            navigate("/onboarding/recruiter");
+            return;
+          }
+          navigate("/recruiter");
+        } else {
+          navigate("/");
+        }
+      }
+
       toast({
         title: "Login realizado!",
         description: "Bem-vindo de volta.",
       });
-      navigate("/");
     } catch (error: any) {
       toast({
         title: "Erro no login",
@@ -126,43 +164,20 @@ const Auth = () => {
 
       if (signUpError) throw signUpError;
 
-      // Create role-specific profile
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        if (userType === "recruiter") {
-          const { error: profileError } = await supabase
-            .from("recruiter_profiles")
-            .insert({
-              user_id: user.id,
-              company_name: data.companyName,
-              position: data.position || null,
-              phone: data.phone || null,
-            });
-
-          if (profileError) throw profileError;
-        } else {
-          const { error: profileError } = await supabase
-            .from("candidate_profiles")
-            .insert({
-              user_id: user.id,
-              phone: data.phone || null,
-              current_position: data.currentPosition || null,
-              location: data.location || null,
-            });
-
-          if (profileError) throw profileError;
-        }
-      }
-
       toast({
         title: "Cadastro realizado!",
-        description: "Você já pode fazer login.",
+        description: "Complete seu perfil para continuar.",
       });
       
       // Auto-login after signup
       await supabase.auth.signInWithPassword({ email, password });
-      navigate("/");
+      
+      // Redirect to onboarding
+      if (userType === "recruiter") {
+        navigate("/onboarding/recruiter");
+      } else {
+        navigate("/onboarding/candidate");
+      }
     } catch (error: any) {
       toast({
         title: "Erro no cadastro",

@@ -9,6 +9,8 @@ import RecruiterDashboard from "./pages/RecruiterDashboard";
 import CandidateProfile from "./pages/CandidateProfile";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
+import CandidateOnboarding from "./pages/CandidateOnboarding";
+import RecruiterOnboarding from "./pages/RecruiterOnboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/onboarding/candidate" element={<CandidateOnboarding />} />
+          <Route path="/onboarding/recruiter" element={<RecruiterOnboarding />} />
           <Route path="/jobs" element={<CandidateDashboard />} />
           <Route path="/recruiter" element={<RecruiterDashboard />} />
           <Route path="/profile/:id/:view" element={<CandidateProfile />} />
