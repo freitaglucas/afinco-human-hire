@@ -44,12 +44,14 @@ const RecruiterOnboarding = () => {
 
       const { error } = await supabase
         .from("recruiter_profiles")
-        .update({
+        .upsert({
+          user_id: user?.id,
           company_name: data.companyName,
           position: data.position,
           phone: data.phone || null,
-        })
-        .eq("user_id", user?.id);
+        }, {
+          onConflict: 'user_id'
+        });
 
       if (error) throw error;
 

@@ -54,15 +54,17 @@ const CandidateOnboarding = () => {
 
       const { error } = await supabase
         .from("candidate_profiles")
-        .update({
+        .upsert({
+          user_id: user?.id,
           current_position: data.currentPosition,
           location: data.location,
           phone: data.phone || null,
           skills: skillsArray,
           desired_positions: desiredPositionsArray,
           years_of_experience: data.yearsOfExperience,
-        })
-        .eq("user_id", user?.id);
+        }, {
+          onConflict: 'user_id'
+        });
 
       if (error) throw error;
 

@@ -93,7 +93,7 @@ const Auth = () => {
             .eq("user_id", user.id)
             .single();
 
-          if (!profile?.company_name || !profile?.position) {
+          if (!profile?.company_name || !profile?.position || profile.company_name.trim() === '' || profile.position.trim() === '') {
             navigate("/onboarding/recruiter");
             return;
           }
@@ -169,8 +169,18 @@ const Auth = () => {
         description: "Complete seu perfil para continuar.",
       });
       
+      // Wait for the profile to be created by the trigger
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Auto-login after signup
-      await supabase.auth.signInWithPassword({ email, password });
+      const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (loginError) {
+        console.error("Login error after signup:", loginError);
+        // Even if login fails, user can login manually
+        navigate("/auth");
+        return;
+      }
       
       // Redirect to onboarding
       if (userType === "recruiter") {

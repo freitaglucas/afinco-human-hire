@@ -250,6 +250,19 @@ const CandidateProfile = () => {
             description: "Usuário não encontrado",
             variant: "destructive"
           });
+          setLoading(false);
+          return;
+        }
+
+        // Validate UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(profileId)) {
+          toast({
+            title: "Erro",
+            description: "ID de perfil inválido",
+            variant: "destructive"
+          });
+          setLoading(false);
           return;
         }
 
@@ -257,9 +270,18 @@ const CandidateProfile = () => {
           .from('profiles')
           .select('*')
           .eq('id', profileId)
-          .single();
+          .maybeSingle();
 
         if (profileError) throw profileError;
+        if (!profile) {
+          toast({
+            title: "Perfil não encontrado",
+            description: "O perfil solicitado não existe",
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
 
         const { data: candidateProfile, error: candidateError } = await supabase
           .from('candidate_profiles')
