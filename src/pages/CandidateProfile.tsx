@@ -238,6 +238,8 @@ const CandidateProfile = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [candidateData, setCandidateData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showProfileForm, setShowProfileForm] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
 
   const isHRView = view === 'hr';
 
@@ -367,9 +369,6 @@ const CandidateProfile = () => {
       </div>
     );
   }
-
-  const [showProfileForm, setShowProfileForm] = useState(false);
-  const [formLoading, setFormLoading] = useState(false);
 
   const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
