@@ -79,9 +79,17 @@ const Auth = () => {
             .from("candidate_profiles")
             .select("current_position, location, skills")
             .eq("user_id", user.id)
-            .single();
+            .maybeSingle();
 
-          if (!profile?.current_position || !profile?.location || !profile?.skills?.length) {
+          // Check if profile exists and is complete
+          const isIncomplete = !profile || 
+                               !profile.current_position || 
+                               !profile.location || 
+                               !profile.skills?.length ||
+                               profile.current_position.trim() === '' ||
+                               profile.location.trim() === '';
+          
+          if (isIncomplete) {
             navigate("/onboarding/candidate");
             return;
           }
@@ -91,9 +99,16 @@ const Auth = () => {
             .from("recruiter_profiles")
             .select("company_name, position")
             .eq("user_id", user.id)
-            .single();
+            .maybeSingle();
 
-          if (!profile?.company_name || !profile?.position || profile.company_name.trim() === '' || profile.position.trim() === '') {
+          // Check if profile exists and is complete
+          const isIncomplete = !profile || 
+                               !profile.company_name || 
+                               !profile.position || 
+                               profile.company_name.trim() === '' || 
+                               profile.position.trim() === '';
+          
+          if (isIncomplete) {
             navigate("/onboarding/recruiter");
             return;
           }

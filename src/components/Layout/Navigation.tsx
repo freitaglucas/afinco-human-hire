@@ -1,19 +1,43 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import afinLogo from '@/assets/afin-logo.png';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 export const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const [userRole, setUserRole] = useState<'candidate' | 'recruiter' | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+        
+        setUserRole(data?.role || null);
+      } else {
+        setUserRole(null);
+      }
+    };
+
+    fetchUserRole();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
+
+  const profileLink = user && userRole 
+    ? `/profile/${user.id}/${userRole}`
+    : '/auth';
 
   return (
     <nav className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
@@ -34,14 +58,16 @@ export const Navigation = () => {
             >
               Encontrar Vagas
             </Link>
-            <Link 
-              to="/profile/1/candidate" 
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                location.pathname.includes('/profile') ? 'text-primary' : 'text-foreground/70'
-              }`}
-            >
-              Meu Perfil
-            </Link>
+            {user && (
+              <Link 
+                to={profileLink}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  location.pathname.includes('/profile') ? 'text-primary' : 'text-foreground/70'
+                }`}
+              >
+                Meu Perfil
+              </Link>
+            )}
             <Link 
               to="/recruiter" 
               className={`text-sm font-medium transition-colors hover:text-secondary ${
