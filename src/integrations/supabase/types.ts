@@ -204,10 +204,12 @@ export type Database = {
           employment_type: string | null
           id: string
           location: string | null
+          min_years_experience: number | null
           pipeline_stages: string[]
           recruiter_id: string
           required_skills: string[]
           salary_range: string | null
+          seniority_level: string | null
           status: string
           title: string
           updated_at: string
@@ -219,10 +221,12 @@ export type Database = {
           employment_type?: string | null
           id?: string
           location?: string | null
+          min_years_experience?: number | null
           pipeline_stages?: string[]
           recruiter_id: string
           required_skills?: string[]
           salary_range?: string | null
+          seniority_level?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -234,10 +238,12 @@ export type Database = {
           employment_type?: string | null
           id?: string
           location?: string | null
+          min_years_experience?: number | null
           pipeline_stages?: string[]
           recruiter_id?: string
           required_skills?: string[]
           salary_range?: string | null
+          seniority_level?: string | null
           status?: string
           title?: string
           updated_at?: string

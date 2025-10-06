@@ -61,8 +61,8 @@ const JobForm = () => {
     if (data) {
       setFormData({
         ...data,
-        min_years_experience: data.min_years_experience || 0,
-        seniority_level: data.seniority_level || ""
+        min_years_experience: (data as any).min_years_experience || 0,
+        seniority_level: (data as any).seniority_level || ""
       });
     }
   };
