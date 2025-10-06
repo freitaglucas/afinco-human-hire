@@ -240,6 +240,7 @@ const CandidateProfile = () => {
   const [loading, setLoading] = useState(true);
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const isHRView = view === 'hr';
 
@@ -405,11 +406,18 @@ const CandidateProfile = () => {
 
       if (error) throw error;
 
+      // Update profile full_name if needed
+      await supabase
+        .from("profiles")
+        .update({ full_name: data.currentPosition })
+        .eq('id', user?.id);
+
       toast({
-        title: "Perfil criado!",
-        description: "Seu perfil foi configurado com sucesso.",
+        title: editMode ? "Perfil atualizado!" : "Perfil criado!",
+        description: "Seu perfil foi salvo com sucesso.",
       });
 
+      setEditMode(false);
       // Reload the page to show the profile
       window.location.reload();
     } catch (error: any) {
@@ -545,6 +553,98 @@ const CandidateProfile = () => {
       <Navigation />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {editMode ? (
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader className="text-center">
+              <CardTitle className="text-3xl font-bold">Editar perfil</CardTitle>
+              <CardDescription>Atualize suas informações profissionais</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleProfileSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="currentPosition">Cargo Atual *</Label>
+                  <Input
+                    id="currentPosition"
+                    name="currentPosition"
+                    placeholder="Ex: Desenvolvedor Frontend"
+                    defaultValue={candidate.title}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="location">Localização *</Label>
+                  <Input
+                    id="location"
+                    name="location"
+                    placeholder="Ex: São Paulo, SP"
+                    defaultValue={candidate.location}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Telefone</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="(11) 99999-9999"
+                    defaultValue={candidate.phone}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="skills">Habilidades * (separadas por vírgula)</Label>
+                  <Textarea
+                    id="skills"
+                    name="skills"
+                    placeholder="Ex: React, TypeScript, Node.js"
+                    defaultValue={candidate.technicalSkills.map((s: any) => s.name).join(", ")}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="desiredPositions">Cargos Desejados * (separados por vírgula)</Label>
+                  <Textarea
+                    id="desiredPositions"
+                    name="desiredPositions"
+                    placeholder="Ex: Desenvolvedor Senior, Tech Lead"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="yearsOfExperience">Anos de Experiência *</Label>
+                  <Input
+                    id="yearsOfExperience"
+                    name="yearsOfExperience"
+                    type="number"
+                    min="0"
+                    placeholder="Ex: 5"
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setEditMode(false)}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="flex-1" disabled={formLoading}>
+                    {formLoading ? "Salvando..." : "Salvar alterações"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
         {/* Header */}
         <div className="flex items-start justify-between mb-8">
           <div className="flex items-start space-x-6">
@@ -593,6 +693,16 @@ const CandidateProfile = () => {
                   <Button variant="outline" size="sm">
                     <Globe className="w-4 h-4 mr-1" />
                     Website
+                  </Button>
+                )}
+                {!isHRView && (
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => setEditMode(true)}
+                  >
+                    <User className="w-4 h-4 mr-1" />
+                    Editar Perfil
                   </Button>
                 )}
               </div>
@@ -1020,6 +1130,8 @@ const CandidateProfile = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </div>
 
       {/* Stage Modal */}

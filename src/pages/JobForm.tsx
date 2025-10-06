@@ -27,6 +27,8 @@ const JobForm = () => {
     salary_range: "",
     employment_type: "full-time",
     required_skills: [] as string[],
+    min_years_experience: 0,
+    seniority_level: "",
     pipeline_stages: ["Novas Candidaturas", "Triagem", "Entrevista", "Entrevista Final", "Aprovado", "Rejeitado"],
     status: "active"
   });
@@ -56,7 +58,13 @@ const JobForm = () => {
       return;
     }
     
-    if (data) setFormData(data);
+    if (data) {
+      setFormData({
+        ...data,
+        min_years_experience: data.min_years_experience || 0,
+        seniority_level: data.seniority_level || ""
+      });
+    }
   };
 
   const addSkill = () => {
@@ -213,19 +221,50 @@ const JobForm = () => {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="employment_type">Tipo de Contrato</Label>
+                <select
+                  id="employment_type"
+                  value={formData.employment_type}
+                  onChange={(e) => setFormData({ ...formData, employment_type: e.target.value })}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="full-time">CLT</option>
+                  <option value="part-time">Meio Período</option>
+                  <option value="contract">PJ</option>
+                  <option value="internship">Estágio</option>
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="seniority_level">Nível de Senioridade</Label>
+                <select
+                  id="seniority_level"
+                  value={formData.seniority_level}
+                  onChange={(e) => setFormData({ ...formData, seniority_level: e.target.value })}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="">Selecione o nível</option>
+                  <option value="Estagiário">Estagiário</option>
+                  <option value="Júnior">Júnior</option>
+                  <option value="Pleno">Pleno</option>
+                  <option value="Sênior">Sênior</option>
+                  <option value="Especialista">Especialista</option>
+                </select>
+              </div>
+            </div>
+
             <div>
-              <Label htmlFor="employment_type">Tipo de Contrato</Label>
-              <select
-                id="employment_type"
-                value={formData.employment_type}
-                onChange={(e) => setFormData({ ...formData, employment_type: e.target.value })}
-                className="w-full p-2 border rounded-md"
-              >
-                <option value="full-time">CLT</option>
-                <option value="part-time">Meio Período</option>
-                <option value="contract">PJ</option>
-                <option value="internship">Estágio</option>
-              </select>
+              <Label htmlFor="min_years_experience">Anos de Experiência Mínimos</Label>
+              <Input
+                id="min_years_experience"
+                type="number"
+                min="0"
+                value={formData.min_years_experience}
+                onChange={(e) => setFormData({ ...formData, min_years_experience: parseInt(e.target.value) || 0 })}
+                placeholder="Ex: 3"
+              />
             </div>
 
             <div>
