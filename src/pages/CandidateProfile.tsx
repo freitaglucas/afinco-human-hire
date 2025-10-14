@@ -241,6 +241,12 @@ const CandidateProfile = () => {
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  
+  // States for dynamic form fields
+  const [experiences, setExperiences] = useState<any[]>([]);
+  const [educations, setEducations] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [growthOpportunities, setGrowthOpportunities] = useState<any[]>([]);
 
   const isHRView = view === 'hr';
 
@@ -373,12 +379,6 @@ const CandidateProfile = () => {
       </div>
     );
   }
-
-  // States for dynamic form fields
-  const [experiences, setExperiences] = useState<any[]>([]);
-  const [educations, setEducations] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [growthOpportunities, setGrowthOpportunities] = useState<any[]>([]);
 
   useEffect(() => {
     if (candidateData) {
