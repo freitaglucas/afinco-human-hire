@@ -369,6 +369,15 @@ const CandidateProfile = () => {
     fetchCandidateData();
   }, [id, user]);
 
+  useEffect(() => {
+    if (candidateData) {
+      setExperiences(candidateData.experience || []);
+      setEducations(candidateData.education || []);
+      setProjects(candidateData.projects || []);
+      setGrowthOpportunities(candidateData.growthOpportunities || []);
+    }
+  }, [candidateData]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -379,15 +388,6 @@ const CandidateProfile = () => {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (candidateData) {
-      setExperiences(candidateData.experience || []);
-      setEducations(candidateData.education || []);
-      setProjects(candidateData.projects || []);
-      setGrowthOpportunities(candidateData.growthOpportunities || []);
-    }
-  }, [candidateData]);
 
   const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
