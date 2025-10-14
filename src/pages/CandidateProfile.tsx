@@ -374,6 +374,21 @@ const CandidateProfile = () => {
     );
   }
 
+  // States for dynamic form fields
+  const [experiences, setExperiences] = useState<any[]>([]);
+  const [educations, setEducations] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [growthOpportunities, setGrowthOpportunities] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (candidateData) {
+      setExperiences(candidateData.experience || []);
+      setEducations(candidateData.education || []);
+      setProjects(candidateData.projects || []);
+      setGrowthOpportunities(candidateData.growthOpportunities || []);
+    }
+  }, [candidateData]);
+
   const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormLoading(true);
@@ -418,6 +433,10 @@ const CandidateProfile = () => {
           linkedin_url: data.linkedinUrl || null,
           github_url: data.githubUrl || null,
           website_url: data.websiteUrl || null,
+          experience: experiences,
+          education: educations,
+          projects: projects,
+          growth_opportunities: growthOpportunities,
         }, {
           onConflict: 'user_id'
         });
@@ -449,6 +468,62 @@ const CandidateProfile = () => {
     } finally {
       setFormLoading(false);
     }
+  };
+
+  const addExperience = () => {
+    setExperiences([...experiences, { company: '', title: '', startDate: '', endDate: '', description: '', skills: [] }]);
+  };
+
+  const removeExperience = (index: number) => {
+    setExperiences(experiences.filter((_, i) => i !== index));
+  };
+
+  const updateExperience = (index: number, field: string, value: any) => {
+    const updated = [...experiences];
+    updated[index] = { ...updated[index], [field]: value };
+    setExperiences(updated);
+  };
+
+  const addEducation = () => {
+    setEducations([...educations, { degree: '', institution: '', startDate: '', endDate: '', description: '' }]);
+  };
+
+  const removeEducation = (index: number) => {
+    setEducations(educations.filter((_, i) => i !== index));
+  };
+
+  const updateEducation = (index: number, field: string, value: any) => {
+    const updated = [...educations];
+    updated[index] = { ...updated[index], [field]: value };
+    setEducations(updated);
+  };
+
+  const addProject = () => {
+    setProjects([...projects, { name: '', description: '', technologies: [], url: '', startDate: '', endDate: '' }]);
+  };
+
+  const removeProject = (index: number) => {
+    setProjects(projects.filter((_, i) => i !== index));
+  };
+
+  const updateProject = (index: number, field: string, value: any) => {
+    const updated = [...projects];
+    updated[index] = { ...updated[index], [field]: value };
+    setProjects(updated);
+  };
+
+  const addGrowthOpportunity = () => {
+    setGrowthOpportunities([...growthOpportunities, { area: '', level: '', interest: 50, timeframe: '', description: '' }]);
+  };
+
+  const removeGrowthOpportunity = (index: number) => {
+    setGrowthOpportunities(growthOpportunities.filter((_, i) => i !== index));
+  };
+
+  const updateGrowthOpportunity = (index: number, field: string, value: any) => {
+    const updated = [...growthOpportunities];
+    updated[index] = { ...updated[index], [field]: value };
+    setGrowthOpportunities(updated);
   };
 
   if (!candidateData || !candidateData.name || !candidateData.title) {
@@ -843,6 +918,330 @@ const CandidateProfile = () => {
                         />
                       </div>
                     </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Experiências */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Briefcase className="w-5 h-5" />
+                        Experiências Profissionais
+                      </h3>
+                      <Button type="button" variant="outline" size="sm" onClick={addExperience}>
+                        + Adicionar
+                      </Button>
+                    </div>
+                    {experiences.map((exp, index) => (
+                      <Card key={index} className="p-4">
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium">Experiência {index + 1}</h4>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => removeExperience(index)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Cargo</Label>
+                              <Input
+                                value={exp.title || ''}
+                                onChange={(e) => updateExperience(index, 'title', e.target.value)}
+                                placeholder="Ex: Desenvolvedor Frontend"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Empresa</Label>
+                              <Input
+                                value={exp.company || ''}
+                                onChange={(e) => updateExperience(index, 'company', e.target.value)}
+                                placeholder="Ex: TechCorp"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Data Início</Label>
+                              <Input
+                                type="month"
+                                value={exp.startDate || ''}
+                                onChange={(e) => updateExperience(index, 'startDate', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Data Fim (deixe vazio se atual)</Label>
+                              <Input
+                                type="month"
+                                value={exp.endDate || ''}
+                                onChange={(e) => updateExperience(index, 'endDate', e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Descrição</Label>
+                            <Textarea
+                              value={exp.description || ''}
+                              onChange={(e) => updateExperience(index, 'description', e.target.value)}
+                              placeholder="Descreva suas responsabilidades e conquistas..."
+                              rows={3}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Habilidades (separadas por vírgula)</Label>
+                            <Input
+                              value={Array.isArray(exp.skills) ? exp.skills.join(', ') : ''}
+                              onChange={(e) => updateExperience(index, 'skills', e.target.value.split(',').map(s => s.trim()))}
+                              placeholder="Ex: React, Node.js, TypeScript"
+                            />
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+
+                  <Separator />
+
+                  {/* Educação */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <GraduationCap className="w-5 h-5" />
+                        Formação Acadêmica
+                      </h3>
+                      <Button type="button" variant="outline" size="sm" onClick={addEducation}>
+                        + Adicionar
+                      </Button>
+                    </div>
+                    {educations.map((edu, index) => (
+                      <Card key={index} className="p-4">
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium">Formação {index + 1}</h4>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => removeEducation(index)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Grau/Curso</Label>
+                              <Input
+                                value={edu.degree || ''}
+                                onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                                placeholder="Ex: Bacharelado em Ciência da Computação"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Instituição</Label>
+                              <Input
+                                value={edu.institution || ''}
+                                onChange={(e) => updateEducation(index, 'institution', e.target.value)}
+                                placeholder="Ex: USP"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Data Início</Label>
+                              <Input
+                                type="month"
+                                value={edu.startDate || ''}
+                                onChange={(e) => updateEducation(index, 'startDate', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Data Fim</Label>
+                              <Input
+                                type="month"
+                                value={edu.endDate || ''}
+                                onChange={(e) => updateEducation(index, 'endDate', e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Descrição (opcional)</Label>
+                            <Textarea
+                              value={edu.description || ''}
+                              onChange={(e) => updateEducation(index, 'description', e.target.value)}
+                              placeholder="Descreva atividades relevantes, projetos, etc..."
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+
+                  <Separator />
+
+                  {/* Projetos */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Lightbulb className="w-5 h-5" />
+                        Projetos
+                      </h3>
+                      <Button type="button" variant="outline" size="sm" onClick={addProject}>
+                        + Adicionar
+                      </Button>
+                    </div>
+                    {projects.map((project, index) => (
+                      <Card key={index} className="p-4">
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium">Projeto {index + 1}</h4>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => removeProject(index)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Nome do Projeto</Label>
+                            <Input
+                              value={project.name || ''}
+                              onChange={(e) => updateProject(index, 'name', e.target.value)}
+                              placeholder="Ex: Sistema de E-commerce"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Descrição</Label>
+                            <Textarea
+                              value={project.description || ''}
+                              onChange={(e) => updateProject(index, 'description', e.target.value)}
+                              placeholder="Descreva o projeto e seu papel..."
+                              rows={3}
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Data Início</Label>
+                              <Input
+                                type="month"
+                                value={project.startDate || ''}
+                                onChange={(e) => updateProject(index, 'startDate', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Data Fim</Label>
+                              <Input
+                                type="month"
+                                value={project.endDate || ''}
+                                onChange={(e) => updateProject(index, 'endDate', e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Tecnologias (separadas por vírgula)</Label>
+                            <Input
+                              value={Array.isArray(project.technologies) ? project.technologies.join(', ') : ''}
+                              onChange={(e) => updateProject(index, 'technologies', e.target.value.split(',').map(s => s.trim()))}
+                              placeholder="Ex: React, Node.js, MongoDB"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>URL (opcional)</Label>
+                            <Input
+                              value={project.url || ''}
+                              onChange={(e) => updateProject(index, 'url', e.target.value)}
+                              placeholder="https://projeto.com"
+                            />
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+
+                  <Separator />
+
+                  {/* Oportunidades de Crescimento */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5" />
+                        Oportunidades de Crescimento
+                      </h3>
+                      <Button type="button" variant="outline" size="sm" onClick={addGrowthOpportunity}>
+                        + Adicionar
+                      </Button>
+                    </div>
+                    {growthOpportunities.map((opp, index) => (
+                      <Card key={index} className="p-4">
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium">Oportunidade {index + 1}</h4>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => removeGrowthOpportunity(index)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Área de Interesse</Label>
+                              <Input
+                                value={opp.area || ''}
+                                onChange={(e) => updateGrowthOpportunity(index, 'area', e.target.value)}
+                                placeholder="Ex: Arquitetura de Software"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Nível Atual</Label>
+                              <Input
+                                value={opp.level || ''}
+                                onChange={(e) => updateGrowthOpportunity(index, 'level', e.target.value)}
+                                placeholder="Ex: Intermediário"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Interesse (0-100)</Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={opp.interest || 50}
+                                onChange={(e) => updateGrowthOpportunity(index, 'interest', parseInt(e.target.value))}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Prazo</Label>
+                              <Input
+                                value={opp.timeframe || ''}
+                                onChange={(e) => updateGrowthOpportunity(index, 'timeframe', e.target.value)}
+                                placeholder="Ex: 6 meses"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Descrição</Label>
+                            <Textarea
+                              value={opp.description || ''}
+                              onChange={(e) => updateGrowthOpportunity(index, 'description', e.target.value)}
+                              placeholder="Descreva seus objetivos e planos..."
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
                   </div>
 
                   <div className="flex gap-2 pt-4">
