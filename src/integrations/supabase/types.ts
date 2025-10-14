@@ -64,50 +64,74 @@ export type Database = {
       }
       candidate_profiles: {
         Row: {
+          bio: string | null
           created_at: string
           current_company: string | null
           current_position: string | null
           desired_positions: string[] | null
+          education: Json | null
+          experience: Json | null
+          github_url: string | null
+          growth_opportunities: Json | null
           id: string
           linkedin_url: string | null
           location: string | null
           phone: string | null
+          projects: Json | null
           resume_url: string | null
           skills: string[] | null
+          soft_skills: string[] | null
           updated_at: string
           user_id: string
+          website_url: string | null
           willing_to_relocate: boolean | null
           years_of_experience: number | null
         }
         Insert: {
+          bio?: string | null
           created_at?: string
           current_company?: string | null
           current_position?: string | null
           desired_positions?: string[] | null
+          education?: Json | null
+          experience?: Json | null
+          github_url?: string | null
+          growth_opportunities?: Json | null
           id?: string
           linkedin_url?: string | null
           location?: string | null
           phone?: string | null
+          projects?: Json | null
           resume_url?: string | null
           skills?: string[] | null
+          soft_skills?: string[] | null
           updated_at?: string
           user_id: string
+          website_url?: string | null
           willing_to_relocate?: boolean | null
           years_of_experience?: number | null
         }
         Update: {
+          bio?: string | null
           created_at?: string
           current_company?: string | null
           current_position?: string | null
           desired_positions?: string[] | null
+          education?: Json | null
+          experience?: Json | null
+          github_url?: string | null
+          growth_opportunities?: Json | null
           id?: string
           linkedin_url?: string | null
           location?: string | null
           phone?: string | null
+          projects?: Json | null
           resume_url?: string | null
           skills?: string[] | null
+          soft_skills?: string[] | null
           updated_at?: string
           user_id?: string
+          website_url?: string | null
           willing_to_relocate?: boolean | null
           years_of_experience?: number | null
         }

@@ -312,21 +312,24 @@ const CandidateProfile = () => {
           id: profile.id,
           name: profile.full_name || 'Usuário',
           title: candidateProfile?.current_position || 'Profissional',
+          currentCompany: candidateProfile?.current_company || '',
           location: candidateProfile?.location || 'Não informado',
           email: profile.email || '',
           phone: candidateProfile?.phone || '',
           avatar: profile.avatar_url || null,
-          bio: 'Perfil em construção',
-          experience: [],
-          education: [],
+          bio: candidateProfile?.bio || '',
+          experience: candidateProfile?.experience || [],
+          education: candidateProfile?.education || [],
           technicalSkills: (candidateProfile?.skills || []).map((skill: string) => ({
             name: skill,
             level: 70,
             years: 2
           })),
-          softSkills: [],
-          projects: [],
-          growthOpportunities: [],
+          softSkills: candidateProfile?.soft_skills || [],
+          desiredPositions: candidateProfile?.desired_positions || [],
+          yearsOfExperience: candidateProfile?.years_of_experience || 0,
+          projects: candidateProfile?.projects || [],
+          growthOpportunities: candidateProfile?.growth_opportunities || [],
           seniorityAssessment: {
             overall: 'Pleno',
             technical: 70,
@@ -339,8 +342,8 @@ const CandidateProfile = () => {
           applicationStages: [],
           socialLinks: {
             linkedin: candidateProfile?.linkedin_url || '',
-            github: '',
-            website: ''
+            github: candidateProfile?.github_url || '',
+            website: candidateProfile?.website_url || ''
           }
         };
 
@@ -379,15 +382,24 @@ const CandidateProfile = () => {
     
     try {
       const data = {
+        fullName: formData.get("fullName") as string,
         currentPosition: formData.get("currentPosition") as string,
         location: formData.get("location") as string,
         phone: formData.get("phone") as string,
+        email: formData.get("email") as string,
+        bio: formData.get("bio") as string,
         skills: formData.get("skills") as string,
+        softSkills: formData.get("softSkills") as string,
         desiredPositions: formData.get("desiredPositions") as string,
         yearsOfExperience: parseInt(formData.get("yearsOfExperience") as string) || 0,
+        currentCompany: formData.get("currentCompany") as string,
+        linkedinUrl: formData.get("linkedinUrl") as string,
+        githubUrl: formData.get("githubUrl") as string,
+        websiteUrl: formData.get("websiteUrl") as string,
       };
 
       const skillsArray = data.skills.split(",").map(s => s.trim()).filter(Boolean);
+      const softSkillsArray = data.softSkills.split(",").map(s => s.trim()).filter(Boolean);
       const desiredPositionsArray = data.desiredPositions.split(",").map(s => s.trim()).filter(Boolean);
 
       const { error } = await supabase
@@ -395,21 +407,30 @@ const CandidateProfile = () => {
         .upsert({
           user_id: user?.id,
           current_position: data.currentPosition,
+          current_company: data.currentCompany || null,
           location: data.location,
           phone: data.phone || null,
+          bio: data.bio || null,
           skills: skillsArray,
+          soft_skills: softSkillsArray,
           desired_positions: desiredPositionsArray,
           years_of_experience: data.yearsOfExperience,
+          linkedin_url: data.linkedinUrl || null,
+          github_url: data.githubUrl || null,
+          website_url: data.websiteUrl || null,
         }, {
           onConflict: 'user_id'
         });
 
       if (error) throw error;
 
-      // Update profile full_name if needed
+      // Update profile
       await supabase
         .from("profiles")
-        .update({ full_name: data.currentPosition })
+        .update({ 
+          full_name: data.fullName,
+          email: data.email
+        })
         .eq('id', user?.id);
 
       toast({
@@ -418,7 +439,6 @@ const CandidateProfile = () => {
       });
 
       setEditMode(false);
-      // Reload the page to show the profile
       window.location.reload();
     } catch (error: any) {
       toast({
@@ -449,50 +469,109 @@ const CandidateProfile = () => {
               </CardContent>
             </Card>
           ) : (
-            <Card className="max-w-2xl mx-auto">
+            <Card className="max-w-4xl mx-auto">
               <CardHeader className="text-center">
                 <CardTitle className="text-3xl font-bold">Complete seu perfil</CardTitle>
                 <CardDescription>Preencha as informações para começar a usar a plataforma</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleProfileSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPosition">Cargo Atual *</Label>
-                    <Input
-                      id="currentPosition"
-                      name="currentPosition"
-                      placeholder="Ex: Desenvolvedor Frontend"
-                      required
-                    />
+                <form onSubmit={handleProfileSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName">Nome Completo *</Label>
+                      <Input
+                        id="fullName"
+                        name="fullName"
+                        placeholder="Ex: João Silva"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">E-mail *</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="email@exemplo.com"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPosition">Cargo Atual *</Label>
+                      <Input
+                        id="currentPosition"
+                        name="currentPosition"
+                        placeholder="Ex: Desenvolvedor Frontend"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="currentCompany">Empresa Atual</Label>
+                      <Input
+                        id="currentCompany"
+                        name="currentCompany"
+                        placeholder="Ex: TechCorp"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="location">Localização *</Label>
+                      <Input
+                        id="location"
+                        name="location"
+                        placeholder="Ex: São Paulo, SP"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Telefone</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        placeholder="(11) 99999-9999"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="location">Localização *</Label>
-                    <Input
-                      id="location"
-                      name="location"
-                      placeholder="Ex: São Paulo, SP"
-                      required
+                    <Label htmlFor="bio">Sobre mim</Label>
+                    <Textarea
+                      id="bio"
+                      name="bio"
+                      placeholder="Conte um pouco sobre você, suas experiências e objetivos profissionais..."
+                      rows={4}
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Telefone</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="(11) 99999-9999"
-                    />
-                  </div>
+                  <Separator />
 
                   <div className="space-y-2">
-                    <Label htmlFor="skills">Habilidades * (separadas por vírgula)</Label>
+                    <Label htmlFor="skills">Habilidades Técnicas * (separadas por vírgula)</Label>
                     <Textarea
                       id="skills"
                       name="skills"
-                      placeholder="Ex: React, TypeScript, Node.js"
+                      placeholder="Ex: React, TypeScript, Node.js, Python, AWS"
                       required
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="softSkills">Soft Skills (separadas por vírgula)</Label>
+                    <Textarea
+                      id="softSkills"
+                      name="softSkills"
+                      placeholder="Ex: Liderança, Comunicação, Trabalho em equipe"
+                      rows={2}
                     />
                   </div>
 
@@ -501,8 +580,9 @@ const CandidateProfile = () => {
                     <Textarea
                       id="desiredPositions"
                       name="desiredPositions"
-                      placeholder="Ex: Desenvolvedor Senior, Tech Lead"
+                      placeholder="Ex: Desenvolvedor Senior, Tech Lead, Arquiteto de Software"
                       required
+                      rows={2}
                     />
                   </div>
 
@@ -518,7 +598,41 @@ const CandidateProfile = () => {
                     />
                   </div>
 
-                  <div className="flex gap-2">
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Links Sociais</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedinUrl">LinkedIn</Label>
+                        <Input
+                          id="linkedinUrl"
+                          name="linkedinUrl"
+                          placeholder="linkedin.com/in/seu-perfil"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="githubUrl">GitHub</Label>
+                        <Input
+                          id="githubUrl"
+                          name="githubUrl"
+                          placeholder="github.com/seu-usuario"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="websiteUrl">Website</Label>
+                        <Input
+                          id="websiteUrl"
+                          name="websiteUrl"
+                          placeholder="seusite.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
                     <Button 
                       type="button" 
                       variant="outline" 
@@ -554,95 +668,199 @@ const CandidateProfile = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {editMode ? (
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold">Editar perfil</CardTitle>
-              <CardDescription>Atualize suas informações profissionais</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleProfileSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currentPosition">Cargo Atual *</Label>
-                  <Input
-                    id="currentPosition"
-                    name="currentPosition"
-                    placeholder="Ex: Desenvolvedor Frontend"
-                    defaultValue={candidate.title}
-                    required
-                  />
-                </div>
+            <Card className="max-w-4xl mx-auto">
+              <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-bold">Editar perfil</CardTitle>
+                <CardDescription>Atualize suas informações profissionais</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleProfileSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName">Nome Completo *</Label>
+                      <Input
+                        id="fullName"
+                        name="fullName"
+                        placeholder="Ex: João Silva"
+                        defaultValue={candidate.name}
+                        required
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="location">Localização *</Label>
-                  <Input
-                    id="location"
-                    name="location"
-                    placeholder="Ex: São Paulo, SP"
-                    defaultValue={candidate.location}
-                    required
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">E-mail *</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="email@exemplo.com"
+                        defaultValue={candidate.email}
+                        required
+                      />
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="(11) 99999-9999"
-                    defaultValue={candidate.phone}
-                  />
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPosition">Cargo Atual *</Label>
+                      <Input
+                        id="currentPosition"
+                        name="currentPosition"
+                        placeholder="Ex: Desenvolvedor Frontend"
+                        defaultValue={candidate.title}
+                        required
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="skills">Habilidades * (separadas por vírgula)</Label>
-                  <Textarea
-                    id="skills"
-                    name="skills"
-                    placeholder="Ex: React, TypeScript, Node.js"
-                    defaultValue={candidate.technicalSkills.map((s: any) => s.name).join(", ")}
-                    required
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="currentCompany">Empresa Atual</Label>
+                      <Input
+                        id="currentCompany"
+                        name="currentCompany"
+                        placeholder="Ex: TechCorp"
+                        defaultValue={candidate.currentCompany}
+                      />
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="desiredPositions">Cargos Desejados * (separados por vírgula)</Label>
-                  <Textarea
-                    id="desiredPositions"
-                    name="desiredPositions"
-                    placeholder="Ex: Desenvolvedor Senior, Tech Lead"
-                    required
-                  />
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="location">Localização *</Label>
+                      <Input
+                        id="location"
+                        name="location"
+                        placeholder="Ex: São Paulo, SP"
+                        defaultValue={candidate.location}
+                        required
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="yearsOfExperience">Anos de Experiência *</Label>
-                  <Input
-                    id="yearsOfExperience"
-                    name="yearsOfExperience"
-                    type="number"
-                    min="0"
-                    placeholder="Ex: 5"
-                    required
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Telefone</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        placeholder="(11) 99999-9999"
+                        defaultValue={candidate.phone}
+                      />
+                    </div>
+                  </div>
 
-                <div className="flex gap-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setEditMode(false)}
-                    className="flex-1"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button type="submit" className="flex-1" disabled={formLoading}>
-                    {formLoading ? "Salvando..." : "Salvar alterações"}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Sobre mim</Label>
+                    <Textarea
+                      id="bio"
+                      name="bio"
+                      placeholder="Conte um pouco sobre você, suas experiências e objetivos profissionais..."
+                      defaultValue={candidate.bio}
+                      rows={4}
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <Label htmlFor="skills">Habilidades Técnicas * (separadas por vírgula)</Label>
+                    <Textarea
+                      id="skills"
+                      name="skills"
+                      placeholder="Ex: React, TypeScript, Node.js, Python, AWS"
+                      defaultValue={candidate.technicalSkills.map((s: any) => s.name).join(", ")}
+                      required
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="softSkills">Soft Skills (separadas por vírgula)</Label>
+                    <Textarea
+                      id="softSkills"
+                      name="softSkills"
+                      placeholder="Ex: Liderança, Comunicação, Trabalho em equipe"
+                      defaultValue={candidate.softSkills.join(", ")}
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="desiredPositions">Cargos Desejados * (separados por vírgula)</Label>
+                    <Textarea
+                      id="desiredPositions"
+                      name="desiredPositions"
+                      placeholder="Ex: Desenvolvedor Senior, Tech Lead, Arquiteto de Software"
+                      defaultValue={candidate.desiredPositions.join(", ")}
+                      required
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="yearsOfExperience">Anos de Experiência *</Label>
+                    <Input
+                      id="yearsOfExperience"
+                      name="yearsOfExperience"
+                      type="number"
+                      min="0"
+                      placeholder="Ex: 5"
+                      defaultValue={candidate.yearsOfExperience}
+                      required
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Links Sociais</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedinUrl">LinkedIn</Label>
+                        <Input
+                          id="linkedinUrl"
+                          name="linkedinUrl"
+                          placeholder="linkedin.com/in/seu-perfil"
+                          defaultValue={candidate.socialLinks.linkedin}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="githubUrl">GitHub</Label>
+                        <Input
+                          id="githubUrl"
+                          name="githubUrl"
+                          placeholder="github.com/seu-usuario"
+                          defaultValue={candidate.socialLinks.github}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="websiteUrl">Website</Label>
+                        <Input
+                          id="websiteUrl"
+                          name="websiteUrl"
+                          placeholder="seusite.com"
+                          defaultValue={candidate.socialLinks.website}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setEditMode(false)}
+                      className="flex-1"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button type="submit" className="flex-1" disabled={formLoading}>
+                      {formLoading ? "Salvando..." : "Salvar alterações"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
         ) : (
           <>
         {/* Header */}
