@@ -1,94 +1,92 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Afin.co Design System - Human-Centered Recruitment Platform
+/* Job Match Design System - Human-Centered Recruitment Platform
 Based on brand colors and Montserrat typography for transparency and trust
 */
 
 @layer base {
   :root {
-    /* Afin.co Brand Colors */
-    --afin-green: 155 35% 70%; /* Verde Claro #A9D1C2 - Growth, Balance */
-    --afin-green-hover: 155 40% 65%;
-    --afin-green-soft: 155 20% 85%;
+    /* Job Match Brand Colors */
+    --jobmatch-purple: 252 100% 68%;
+    --jobmatch-purple-hover: 252 100% 62%;
+    --jobmatch-purple-soft: 252 100% 95%;
     
-    --afin-beige: 44 64% 41%; /* Bege Suave #A98322 - Humanity, Warmth */
-    --afin-beige-soft: 44 30% 85%;
+    --jobmatch-teal: 172 100% 42%;
+    --jobmatch-teal-soft: 172 60% 92%;
     
-    --afin-dark: 0 0% 20%; /* Cinza Escuro - Professional */
-    --afin-gray: 0 0% 20%; /* Cinza Claro - Subtle details */
-    --afin-light: 0 0% 98%;
+    --jobmatch-dark: 224 35% 14%;
+    --jobmatch-gray: 220 9% 46%;
+    --jobmatch-light: 0 0% 98%;
     
     /* Semantic Design System */
-    --background: var(--afin-light);
-    --foreground: var(--afin-dark);
+    --background: var(--jobmatch-light);
+    --foreground: var(--jobmatch-dark);
 
     --card: 0 0% 100%;
-    --card-foreground: var(--afin-dark);
+    --card-foreground: var(--jobmatch-dark);
 
     --popover: 0 0% 100%;
-    --popover-foreground: var(--afin-dark);
+    --popover-foreground: var(--jobmatch-dark);
 
-    --primary: var(--afin-green);
+    --primary: var(--jobmatch-purple);
     --primary-foreground: 0 0% 100%;
 
-    --secondary: var(--afin-beige);
+    --secondary: var(--jobmatch-teal);
     --secondary-foreground: 0 0% 100%;
 
-    --muted: var(--afin-green-soft);
-    --muted-foreground: var(--afin-dark);
+    --muted: var(--jobmatch-purple-soft);
+    --muted-foreground: var(--jobmatch-dark);
 
-    --accent: var(--afin-beige-soft);
-    --accent-foreground: var(--afin-dark);
+    --accent: var(--jobmatch-teal-soft);
+    --accent-foreground: var(--jobmatch-dark);
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 0 0% 90%;
     --input: 0 0% 95%;
-    --ring: var(--afin-green);
+    --ring: var(--jobmatch-purple);
 
     --radius: 0.75rem;
 
-    /* Custom Afin.co Design Tokens */
-    --gradient-hero: linear-gradient(135deg, hsl(var(--afin-green)), hsl(var(--afin-beige)));
-    --gradient-card: linear-gradient(180deg, hsl(var(--afin-light)), hsl(var(--afin-green-soft)));
-    --shadow-soft: 0 4px 24px -4px hsl(var(--afin-green) / 0.12);
-    --shadow-card: 0 8px 32px -8px hsl(var(--afin-dark) / 0.08);
+    /* Custom Job Match Design Tokens */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--jobmatch-purple)), hsl(var(--jobmatch-teal)));
+    --gradient-card: linear-gradient(180deg, hsl(var(--jobmatch-light)), hsl(var(--jobmatch-purple-soft)));
+    --shadow-soft: 0 4px 24px -4px hsl(var(--jobmatch-purple) / 0.12);
+    --shadow-card: 0 8px 32px -8px hsl(var(--jobmatch-dark) / 0.08);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: var(--afin-dark);
-    --foreground: var(--afin-light);
+    --background: var(--jobmatch-dark);
+    --foreground: var(--jobmatch-light);
 
-    --card: var(--afin-dark);
-    --card-foreground: var(--afin-light);
+    --card: var(--jobmatch-dark);
+    --card-foreground: var(--jobmatch-light);
 
-    --popover: var(--afin-dark);
-    --popover-foreground: var(--afin-light);
+    --popover: var(--jobmatch-dark);
+    --popover-foreground: var(--jobmatch-light);
 
-    --primary: var(--afin-green);
+    --primary: var(--jobmatch-purple);
     --primary-foreground: 0 0% 100%;
 
-    --secondary: var(--afin-beige);
+    --secondary: var(--jobmatch-teal);
     --secondary-foreground: 0 0% 100%;
 
     --muted: 0 0% 25%;
     --muted-foreground: 0 0% 70%;
 
     --accent: 0 0% 30%;
-    --accent-foreground: var(--afin-light);
+    --accent-foreground: var(--jobmatch-light);
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: var(--afin-light);
+    --destructive-foreground: var(--jobmatch-light);
 
     --border: 0 0% 30%;
     --input: 0 0% 25%;
-    --ring: var(--afin-green);
+    --ring: var(--jobmatch-purple);
   }
 }
 

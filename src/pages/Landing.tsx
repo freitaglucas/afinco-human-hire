@@ -72,7 +72,7 @@ const Landing = () => {
               Nossa Filosofia: Humanizar o Recrutamento
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Cada princípio da Afin.co foi criado para revolucionar a experiência 
+              Cada princípio da Job Match foi criado para revolucionar a experiência 
               de candidatos e recrutadores no mercado brasileiro.
             </p>
           </div>
@@ -280,7 +280,7 @@ const Landing = () => {
       <footer className="py-12 border-t border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-muted-foreground">
-            <p>&copy; 2024 Afin.co - Recrutamento Afetivo. Todos os direitos reservados.</p>
+            <p>&copy; 2026 Job Match — Recrutamento Transparente. Todos os direitos reservados.</p>
             <p className="mt-2 text-sm">
               Feito com ❤️ para humanizar o recrutamento no Brasil
             </p>

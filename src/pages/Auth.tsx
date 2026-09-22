@@ -218,8 +218,8 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/10 to-background p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">Afin.co</CardTitle>
-          <CardDescription>Recrutamento Afetivo</CardDescription>
+          <CardTitle className="text-3xl font-bold">Job Match</CardTitle>
+          <CardDescription>Recrutamento com Transparência Real</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">

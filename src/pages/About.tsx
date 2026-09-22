@@ -71,7 +71,7 @@ const About = () => {
             Recrutamento Humanizado
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
-            Sobre a Afin.co
+            Sobre a Job Match
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
             Revolucionamos o recrutamento brasileiro substituindo a experiência frustrante dos ATS legados 
