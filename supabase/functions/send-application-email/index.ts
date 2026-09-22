@@ -73,7 +73,7 @@ serve(async (req) => {
     }
 
     const { error } = await resend.emails.send({
-      from: "AFIN <onboarding@resend.dev>",
+      from: "Job Match <onboarding@resend.dev>",
       to: [to],
       subject,
       html,

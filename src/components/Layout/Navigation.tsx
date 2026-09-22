@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
-import afinLogo from '@/assets/afin-logo.png';
+import jobMatchLogo from '@/assets/job-match-logo.jpg';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -45,7 +45,8 @@ export const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <img src={afinLogo} alt="Afin.co" className="h-8 w-auto" />
+            <img src={jobMatchLogo} alt="Job Match" className="h-9 w-9 rounded-md object-cover" />
+            <span className="hidden text-base font-bold text-foreground sm:inline">Job Match</span>
           </Link>
 
           {/* Navigation Links */}
