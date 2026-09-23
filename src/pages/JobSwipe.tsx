@@ -189,7 +189,7 @@ const JobSwipe = () => {
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
         <h2 className="mb-4 text-2xl font-bold">Não há mais vagas disponíveis</h2>
         <p className="mb-6 text-muted-foreground">Volte mais tarde para novas oportunidades!</p>
-        <Button onClick={() => navigate("/candidate")}>Voltar ao Dashboard</Button>
+        <Button onClick={() => navigate("/jobs")}>Voltar ao Dashboard</Button>
       </div>
     );
   }
