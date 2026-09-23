@@ -19,7 +19,10 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Link } from 'react-router-dom';
+import { animate, motion, useAnimationControls, useMotionValue, useTransform } from 'framer-motion';
+
+const SWIPE_THRESHOLD = 120;
+const SWIPE_EXIT_DISTANCE = 760;
 
 // Mock data for demonstration
 const mockJobs = [
@@ -112,6 +115,12 @@ const CandidateDashboard = () => {
   const [jobs, setJobs] = useState(mockJobs);
   const [viewMode, setViewMode] = useState<'swipe' | 'serious'>('swipe');
   const [userName, setUserName] = useState<string>('');
+  const [isSwipeLocked, setIsSwipeLocked] = useState(false);
+  const swipeX = useMotionValue(0);
+  const swipeRotate = useTransform(swipeX, [-300, 0, 300], [-11, 0, 11]);
+  const matchOpacity = useTransform(swipeX, [20, SWIPE_THRESHOLD], [0, 1]);
+  const passOpacity = useTransform(swipeX, [-SWIPE_THRESHOLD, -20], [1, 0]);
+  const swipeControls = useAnimationControls();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -133,28 +142,49 @@ const CandidateDashboard = () => {
     fetchUserProfile();
   }, [user]);
 
-  const handleLike = (jobId: string) => {
+  const completeSwipe = (liked: boolean, jobId: string) => {
     const job = jobs.find(j => j.id === jobId);
-    if (job) {
+    if (job && liked) {
       toast({
         title: "Candidatura enviada! 🎉",
         description: `Sua candidatura para ${job.title} na ${job.company} foi enviada com sucesso.`,
       });
-      nextJob();
+    } else if (job) {
+      toast({
+        title: "Vaga descartada",
+        description: "Vamos encontrar outras oportunidades mais adequadas para você.",
+      });
     }
-  };
-
-  const handleDislike = (jobId: string) => {
-    toast({
-      title: "Vaga descartada",
-      description: "Vamos encontrar outras oportunidades mais adequadas para você.",
-    });
     nextJob();
   };
 
+  const resetSwipeCard = async () => {
+    swipeControls.set({ opacity: 1 });
+    await animate(swipeX, 0, { type: 'spring', stiffness: 440, damping: 32 });
+  };
+
+  const commitSwipe = async (liked: boolean, jobId: string) => {
+    if (isSwipeLocked) return;
+    setIsSwipeLocked(true);
+    const direction = liked ? 1 : -1;
+
+    await Promise.all([
+      animate(swipeX, direction * SWIPE_EXIT_DISTANCE, { duration: 0.28, ease: 'easeIn' }),
+      swipeControls.start({ opacity: 0, transition: { duration: 0.24, ease: 'easeIn' } }),
+    ]);
+
+    completeSwipe(liked, jobId);
+    swipeX.set(0);
+    swipeControls.set({ opacity: 1 });
+    setIsSwipeLocked(false);
+  };
+
+  const handleLike = (jobId: string) => void commitSwipe(true, jobId);
+  const handleDislike = (jobId: string) => void commitSwipe(false, jobId);
+
   const nextJob = () => {
     if (currentJobIndex < jobs.length - 1) {
-      setCurrentJobIndex(currentJobIndex + 1);
+      setCurrentJobIndex(index => index + 1);
     } else {
       // No more jobs - could show empty state or load more
       toast({
@@ -231,11 +261,14 @@ const CandidateDashboard = () => {
             {/* View Mode Toggle */}
             <div className="flex justify-center mb-6">
               <div className="bg-muted/50 p-1 rounded-lg flex">
-                <Button variant={viewMode === 'swipe' ? 'default' : 'ghost'} size="sm" asChild>
-                  <Link to="/jobs/swipe" className="flex items-center gap-2">
-                    <Zap className="w-4 h-4" />
-                    Modo Swipe
-                  </Link>
+                <Button
+                  variant={viewMode === 'swipe' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('swipe')}
+                  className="flex items-center gap-2"
+                >
+                  <Zap className="w-4 h-4" />
+                  Modo Swipe
                 </Button>
                 <Button
                   variant={viewMode === 'serious' ? 'default' : 'ghost'}
@@ -252,14 +285,52 @@ const CandidateDashboard = () => {
             {/* Swipe Mode */}
             {viewMode === 'swipe' && (
               <div className="text-center">
-                <div className="flex justify-center mb-6">
+                <div className="relative mx-auto mb-6 min-h-[430px] w-full max-w-md">
                   {currentJob ? (
-                    <JobCard
-                      job={currentJob}
-                      onLike={handleLike}
-                      onDislike={handleDislike}
-                      variant="swipe"
-                    />
+                    <>
+                      {jobs[currentJobIndex + 1] && (
+                        <div aria-hidden="true" className="pointer-events-none absolute inset-x-3 top-5 scale-[0.96] opacity-45">
+                          <JobCard job={jobs[currentJobIndex + 1]} showActions={false} variant="swipe" />
+                        </div>
+                      )}
+                      <motion.div
+                        key={currentJob.id}
+                        data-testid="dashboard-swipe-card"
+                        drag={isSwipeLocked ? false : 'x'}
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.72}
+                        dragMomentum={false}
+                        animate={swipeControls}
+                        style={{ x: swipeX, rotate: swipeRotate }}
+                        onDragEnd={(_, info) => {
+                          if (Math.abs(info.offset.x) >= SWIPE_THRESHOLD) {
+                            void commitSwipe(info.offset.x > 0, currentJob.id);
+                          } else {
+                            void resetSwipeCard();
+                          }
+                        }}
+                        className="absolute inset-x-0 top-0 z-10 cursor-grab touch-pan-y select-none active:cursor-grabbing"
+                      >
+                        <motion.div
+                          style={{ opacity: matchOpacity }}
+                          className="pointer-events-none absolute right-5 top-5 z-20 rotate-6 rounded-md border-4 border-secondary px-4 py-2 text-2xl font-black text-secondary"
+                        >
+                          MATCH
+                        </motion.div>
+                        <motion.div
+                          style={{ opacity: passOpacity }}
+                          className="pointer-events-none absolute left-5 top-5 z-20 -rotate-6 rounded-md border-4 border-destructive px-4 py-2 text-2xl font-black text-destructive"
+                        >
+                          PASSAR
+                        </motion.div>
+                        <JobCard
+                          job={currentJob}
+                          onLike={handleLike}
+                          onDislike={handleDislike}
+                          variant="swipe"
+                        />
+                      </motion.div>
+                    </>
                   ) : (
                     <Card className="w-full max-w-md mx-auto">
                       <CardContent className="p-12 text-center space-y-4">
