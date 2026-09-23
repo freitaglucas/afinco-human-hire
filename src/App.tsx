@@ -11,6 +11,7 @@ import About from "./pages/About";
 import Auth from "./pages/Auth";
 import CandidateOnboarding from "./pages/CandidateOnboarding";
 import RecruiterOnboarding from "./pages/RecruiterOnboarding";
+import JobSwipe from "./pages/JobSwipe";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/onboarding/candidate" element={<CandidateOnboarding />} />
           <Route path="/onboarding/recruiter" element={<RecruiterOnboarding />} />
           <Route path="/jobs" element={<CandidateDashboard />} />
+          <Route path="/jobs/swipe" element={<JobSwipe />} />
           <Route path="/recruiter" element={<RecruiterDashboard />} />
           <Route path="/profile/:id/:view" element={<CandidateProfile />} />
           <Route path="/about" element={<About />} />
