@@ -19,6 +19,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
 
 // Mock data for demonstration
 const mockJobs = [
@@ -230,14 +231,11 @@ const CandidateDashboard = () => {
             {/* View Mode Toggle */}
             <div className="flex justify-center mb-6">
               <div className="bg-muted/50 p-1 rounded-lg flex">
-                <Button
-                  variant={viewMode === 'swipe' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('swipe')}
-                  className="flex items-center gap-2"
-                >
-                  <Zap className="w-4 h-4" />
-                  Modo Swipe
+                <Button variant={viewMode === 'swipe' ? 'default' : 'ghost'} size="sm" asChild>
+                  <Link to="/jobs/swipe" className="flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
+                    Modo Swipe
+                  </Link>
                 </Button>
                 <Button
                   variant={viewMode === 'serious' ? 'default' : 'ghost'}
