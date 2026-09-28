@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SkillSelector } from "@/components/Skills/SkillSelector";
+import { fetchJobSkills, saveJobSkills, SelectedSkill } from "@/lib/skills";
 
 const JobForm = () => {
   const { id } = useParams();
@@ -33,7 +35,7 @@ const JobForm = () => {
     status: "active"
   });
 
-  const [skillInput, setSkillInput] = useState("");
+  const [jobSkills, setJobSkills] = useState<SelectedSkill[]>([]);
   const [stageInput, setStageInput] = useState("");
 
   useEffect(() => {
@@ -59,29 +61,13 @@ const JobForm = () => {
     }
     
     if (data) {
+      fetchJobSkills(data.id).then(setJobSkills).catch(() => undefined);
       setFormData({
         ...data,
         min_years_experience: (data as any).min_years_experience || 0,
         seniority_level: (data as any).seniority_level || ""
       });
     }
-  };
-
-  const addSkill = () => {
-    if (skillInput.trim() && !formData.required_skills.includes(skillInput.trim())) {
-      setFormData({
-        ...formData,
-        required_skills: [...formData.required_skills, skillInput.trim()]
-      });
-      setSkillInput("");
-    }
-  };
-
-  const removeSkill = (skill: string) => {
-    setFormData({
-      ...formData,
-      required_skills: formData.required_skills.filter(s => s !== skill)
-    });
   };
 
   const addStage = () => {
@@ -106,8 +92,10 @@ const JobForm = () => {
     setLoading(true);
 
     try {
+      if (jobSkills.length === 0) throw new Error("Selecione ao menos uma competência");
       const jobData = {
         ...formData,
+        required_skills: jobSkills.map((s) => s.nome),
         recruiter_id: user?.id
       };
 
@@ -118,13 +106,17 @@ const JobForm = () => {
           .eq("id", id);
         
         if (error) throw error;
+        await saveJobSkills(id, jobSkills);
         toast({ title: "Vaga atualizada com sucesso!" });
       } else {
-        const { error } = await supabase
+        const { data: created, error } = await supabase
           .from("jobs")
-          .insert([jobData]);
+          .insert([jobData])
+          .select("id")
+          .single();
         
         if (error) throw error;
+        await saveJobSkills(created.id, jobSkills);
         toast({ title: "Vaga criada com sucesso!" });
       }
       
@@ -269,28 +261,8 @@ const JobForm = () => {
 
             <div>
               <Label>Competências Necessárias *</Label>
-              <div className="flex gap-2 mb-3">
-                <Input
-                  value={skillInput}
-                  onChange={(e) => setSkillInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                  placeholder="Digite uma competência"
-                />
-                <Button type="button" onClick={addSkill}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {formData.required_skills.map((skill) => (
-                  <Badge key={skill} variant="secondary" className="gap-1">
-                    {skill}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => removeSkill(skill)}
-                    />
-                  </Badge>
-                ))}
-              </div>
+              <p className="text-xs text-muted-foreground mb-2">Defina o nível exigido (1–5), o peso (0–10) e se cada competência é obrigatória.</p>
+              <SkillSelector mode="job" value={jobSkills} onChange={setJobSkills} />
             </div>
 
             <div>
