@@ -11,6 +11,9 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { SkillSelector } from '@/components/Skills/SkillSelector';
+import { SeniorityThermometer } from '@/components/Seniority/SeniorityThermometer';
+import { fetchCandidateSkills, saveCandidateSkills, SelectedSkill, SENIORITY_LEVELS, SKILL_LEVEL_LABELS } from '@/lib/skills';
 import { CandidateStageModal } from '@/components/CandidateProfile/CandidateStageModal';
 import { 
   User, 
@@ -247,6 +250,8 @@ const CandidateProfile = () => {
   const [educations, setEducations] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [growthOpportunities, setGrowthOpportunities] = useState<any[]>([]);
+  const [structuredSkills, setStructuredSkills] = useState<SelectedSkill[]>([]);
+  const [seniority, setSeniority] = useState<string>('');
 
   const isHRView = view === 'hr';
 
@@ -313,6 +318,8 @@ const CandidateProfile = () => {
           return;
         }
 
+        const candidateSkills = await fetchCandidateSkills(profileId).catch(() => [] as SelectedSkill[]);
+
         // Combine profile and candidate_profile data
         const combinedData = {
           id: profile.id,
@@ -324,6 +331,8 @@ const CandidateProfile = () => {
           phone: candidateProfile?.phone || '',
           avatar: profile.avatar_url || null,
           bio: candidateProfile?.bio || '',
+          structuredSkills: candidateSkills,
+          senioridadeGeral: (candidateProfile as { senioridade_geral?: string | null })?.senioridade_geral || '',
           experience: candidateProfile?.experience || [],
           education: candidateProfile?.education || [],
           technicalSkills: (candidateProfile?.skills || []).map((skill: string) => ({
@@ -375,6 +384,8 @@ const CandidateProfile = () => {
       setEducations(candidateData.education || []);
       setProjects(candidateData.projects || []);
       setGrowthOpportunities(candidateData.growthOpportunities || []);
+      setStructuredSkills(candidateData.structuredSkills || []);
+      setSeniority(candidateData.senioridadeGeral || '');
     }
   }, [candidateData]);
 
@@ -403,8 +414,6 @@ const CandidateProfile = () => {
         phone: formData.get("phone") as string,
         email: formData.get("email") as string,
         bio: formData.get("bio") as string,
-        skills: formData.get("skills") as string,
-        softSkills: formData.get("softSkills") as string,
         desiredPositions: formData.get("desiredPositions") as string,
         yearsOfExperience: parseInt(formData.get("yearsOfExperience") as string) || 0,
         currentCompany: formData.get("currentCompany") as string,
@@ -413,8 +422,9 @@ const CandidateProfile = () => {
         websiteUrl: formData.get("websiteUrl") as string,
       };
 
-      const skillsArray = data.skills.split(",").map(s => s.trim()).filter(Boolean);
-      const softSkillsArray = data.softSkills.split(",").map(s => s.trim()).filter(Boolean);
+      if (structuredSkills.length === 0) throw new Error("Selecione ao menos uma competência");
+      const skillsArray = structuredSkills.filter(s => s.tipo === "hard").map(s => s.nome);
+      const softSkillsArray = structuredSkills.filter(s => s.tipo === "soft").map(s => s.nome);
       const desiredPositionsArray = data.desiredPositions.split(",").map(s => s.trim()).filter(Boolean);
 
       const { error } = await supabase
@@ -428,6 +438,7 @@ const CandidateProfile = () => {
           bio: data.bio || null,
           skills: skillsArray,
           soft_skills: softSkillsArray,
+          senioridade_geral: seniority || null,
           desired_positions: desiredPositionsArray,
           years_of_experience: data.yearsOfExperience,
           linkedin_url: data.linkedinUrl || null,
@@ -442,6 +453,7 @@ const CandidateProfile = () => {
         });
 
       if (error) throw error;
+      if (user) await saveCandidateSkills(user.id, structuredSkills);
 
       // Update profile
       await supabase
@@ -630,24 +642,22 @@ const CandidateProfile = () => {
                   <Separator />
 
                   <div className="space-y-2">
-                    <Label htmlFor="skills">Habilidades Técnicas * (separadas por vírgula)</Label>
-                    <Textarea
-                      id="skills"
-                      name="skills"
-                      placeholder="Ex: React, TypeScript, Node.js, Python, AWS"
-                      required
-                      rows={3}
-                    />
+                    <Label htmlFor="seniority">Senioridade geral</Label>
+                    <select
+                      id="seniority"
+                      value={seniority}
+                      onChange={(e) => setSeniority(e.target.value)}
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      <option value="">Selecione</option>
+                      {SENIORITY_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                    {seniority && <SeniorityThermometer candidateLevel={seniority} />}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="softSkills">Soft Skills (separadas por vírgula)</Label>
-                    <Textarea
-                      id="softSkills"
-                      name="softSkills"
-                      placeholder="Ex: Liderança, Comunicação, Trabalho em equipe"
-                      rows={2}
-                    />
+                    <Label>Competências * (técnicas e comportamentais)</Label>
+                    <SkillSelector mode="candidate" value={structuredSkills} onChange={setStructuredSkills} />
                   </div>
 
                   <div className="space-y-2">
@@ -836,26 +846,22 @@ const CandidateProfile = () => {
                   <Separator />
 
                   <div className="space-y-2">
-                    <Label htmlFor="skills">Habilidades Técnicas * (separadas por vírgula)</Label>
-                    <Textarea
-                      id="skills"
-                      name="skills"
-                      placeholder="Ex: React, TypeScript, Node.js, Python, AWS"
-                      defaultValue={candidate.technicalSkills.map((s: any) => s.name).join(", ")}
-                      required
-                      rows={3}
-                    />
+                    <Label htmlFor="seniority">Senioridade geral</Label>
+                    <select
+                      id="seniority"
+                      value={seniority}
+                      onChange={(e) => setSeniority(e.target.value)}
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      <option value="">Selecione</option>
+                      {SENIORITY_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                    {seniority && <SeniorityThermometer candidateLevel={seniority} />}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="softSkills">Soft Skills (separadas por vírgula)</Label>
-                    <Textarea
-                      id="softSkills"
-                      name="softSkills"
-                      placeholder="Ex: Liderança, Comunicação, Trabalho em equipe"
-                      defaultValue={candidate.softSkills.join(", ")}
-                      rows={2}
-                    />
+                    <Label>Competências * (técnicas e comportamentais)</Label>
+                    <SkillSelector mode="candidate" value={structuredSkills} onChange={setStructuredSkills} />
                   </div>
 
                   <div className="space-y-2">
@@ -1573,6 +1579,14 @@ const CandidateProfile = () => {
 
           {/* Skills Tab */}
           <TabsContent value="skills" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Senioridade geral (autodeclarada)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SeniorityThermometer candidateLevel={candidate.senioridadeGeral} />
+              </CardContent>
+            </Card>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Technical Skills */}
               <Card>
@@ -1583,18 +1597,18 @@ const CandidateProfile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {candidate.technicalSkills.map((skill, index) => (
-                    <div key={index} className="space-y-2">
+                  {(candidate.structuredSkills?.length ? candidate.structuredSkills : []).filter((sk: SelectedSkill) => sk.tipo === 'hard').map((skill: SelectedSkill) => (
+                    <div key={skill.skill_id} className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="font-medium">{skill.name}</span>
-                        <div className="text-right text-sm text-muted-foreground">
-                          <div>{skill.level}%</div>
-                          <div>{skill.years} anos</div>
-                        </div>
+                        <span className="font-medium">{skill.nome}</span>
+                        <span className="text-sm text-muted-foreground">{SKILL_LEVEL_LABELS[skill.nivel]} ({skill.nivel}/5)</span>
                       </div>
-                      <Progress value={skill.level} className="h-2" />
+                      <Progress value={skill.nivel * 20} className="h-2" />
                     </div>
                   ))}
+                  {!candidate.structuredSkills?.some((sk: SelectedSkill) => sk.tipo === 'hard') && (
+                    <p className="text-sm text-muted-foreground">Nenhuma competência técnica cadastrada.</p>
+                  )}
                 </CardContent>
               </Card>
 
