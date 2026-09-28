@@ -79,6 +79,7 @@ export type Database = {
           phone: string | null
           projects: Json | null
           resume_url: string | null
+          senioridade_geral: string | null
           skills: string[] | null
           soft_skills: string[] | null
           updated_at: string
@@ -103,6 +104,7 @@ export type Database = {
           phone?: string | null
           projects?: Json | null
           resume_url?: string | null
+          senioridade_geral?: string | null
           skills?: string[] | null
           soft_skills?: string[] | null
           updated_at?: string
@@ -127,6 +129,7 @@ export type Database = {
           phone?: string | null
           projects?: Json | null
           resume_url?: string | null
+          senioridade_geral?: string | null
           skills?: string[] | null
           soft_skills?: string[] | null
           updated_at?: string
@@ -141,6 +144,48 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidate_skills: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          evidenciado_por_projeto: boolean
+          id: string
+          nivel_declarado: number
+          skill_id: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          evidenciado_por_projeto?: boolean
+          id?: string
+          nivel_declarado?: number
+          skill_id: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          evidenciado_por_projeto?: boolean
+          id?: string
+          nivel_declarado?: number
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_skills_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidate_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
             referencedColumns: ["id"]
           },
         ]
@@ -216,6 +261,51 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_skills: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          nivel_exigido: number
+          obrigatoria: boolean
+          peso: number
+          skill_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          nivel_exigido?: number
+          obrigatoria?: boolean
+          peso?: number
+          skill_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          nivel_exigido?: number
+          obrigatoria?: boolean
+          peso?: number
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_skills_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
             referencedColumns: ["id"]
           },
         ]
@@ -359,6 +449,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      skills: {
+        Row: {
+          categoria: string | null
+          created_at: string
+          id: string
+          nome: string
+          tipo: string
+        }
+        Insert: {
+          categoria?: string | null
+          created_at?: string
+          id?: string
+          nome: string
+          tipo: string
+        }
+        Update: {
+          categoria?: string | null
+          created_at?: string
+          id?: string
+          nome?: string
+          tipo?: string
+        }
+        Relationships: []
       }
       talent_pool: {
         Row: {
