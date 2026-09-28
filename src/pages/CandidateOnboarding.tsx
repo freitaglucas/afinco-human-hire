@@ -9,12 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { SkillSelector } from "@/components/Skills/SkillSelector";
+import { SeniorityThermometer } from "@/components/Seniority/SeniorityThermometer";
+import { saveCandidateSkills, SelectedSkill, SENIORITY_LEVELS } from "@/lib/skills";
 
 const onboardingSchema = z.object({
   currentPosition: z.string().min(2, "Cargo atual é obrigatório"),
   location: z.string().min(2, "Localização é obrigatória"),
   phone: z.string().optional(),
-  skills: z.string().min(2, "Informe pelo menos uma habilidade"),
   desiredPositions: z.string().min(2, "Informe pelo menos um cargo desejado"),
   yearsOfExperience: z.number().min(0, "Experiência deve ser um número positivo"),
 });
@@ -24,6 +26,8 @@ const CandidateOnboarding = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [skills, setSkills] = useState<SelectedSkill[]>([]);
+  const [seniority, setSeniority] = useState<string>("");
 
   useEffect(() => {
     if (!user) {
@@ -42,14 +46,15 @@ const CandidateOnboarding = () => {
         currentPosition: formData.get("currentPosition") as string,
         location: formData.get("location") as string,
         phone: formData.get("phone") as string,
-        skills: formData.get("skills") as string,
         desiredPositions: formData.get("desiredPositions") as string,
         yearsOfExperience: parseInt(formData.get("yearsOfExperience") as string) || 0,
       };
 
       onboardingSchema.parse(data);
 
-      const skillsArray = data.skills.split(",").map(s => s.trim()).filter(Boolean);
+      if (skills.length === 0) throw new Error("Selecione ao menos uma competência");
+      if (!seniority) throw new Error("Selecione sua senioridade geral");
+      const skillsArray = skills.filter(s => s.tipo === "hard").map(s => s.nome);
       const desiredPositionsArray = data.desiredPositions.split(",").map(s => s.trim()).filter(Boolean);
 
       const { error } = await supabase
@@ -60,6 +65,8 @@ const CandidateOnboarding = () => {
           location: data.location,
           phone: data.phone || null,
           skills: skillsArray,
+          soft_skills: skills.filter(s => s.tipo === "soft").map(s => s.nome),
+          senioridade_geral: seniority,
           desired_positions: desiredPositionsArray,
           years_of_experience: data.yearsOfExperience,
         }, {
@@ -67,6 +74,7 @@ const CandidateOnboarding = () => {
         });
 
       if (error) throw error;
+      if (user) await saveCandidateSkills(user.id, skills);
 
       toast({
         title: "Perfil completo!",
@@ -125,13 +133,22 @@ const CandidateOnboarding = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="skills">Habilidades * (separadas por vírgula)</Label>
-              <Textarea
-                id="skills"
-                name="skills"
-                placeholder="Ex: React, TypeScript, Node.js"
-                required
-              />
+              <Label htmlFor="seniority">Senioridade geral *</Label>
+              <select
+                id="seniority"
+                value={seniority}
+                onChange={(e) => setSeniority(e.target.value)}
+                className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="">Selecione</option>
+                {SENIORITY_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+              </select>
+              {seniority && <SeniorityThermometer candidateLevel={seniority} />}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Competências *</Label>
+              <SkillSelector mode="candidate" value={skills} onChange={setSkills} />
             </div>
 
             <div className="space-y-2">
