@@ -484,7 +484,7 @@ const CandidateProfile = () => {
   };
 
   const addExperience = () => {
-    setExperiences([...experiences, { company: '', title: '', startDate: '', endDate: '', description: '', skills: [] }]);
+    setExperiences([...experiences, { company: '', roles: [{ title: '', seniority: '', startDate: '', endDate: '', description: '' }], skills: [] }]);
   };
 
   const removeExperience = (index: number) => {
