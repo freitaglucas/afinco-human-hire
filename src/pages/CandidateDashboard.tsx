@@ -36,6 +36,7 @@ const mockJobs = [
     description: 'Procuramos um desenvolvedor experiente para liderar projetos de alta complexidade, trabalhando com React, Node.js e AWS em um ambiente colaborativo e inovador.',
     requirements: ['React', 'Node.js', 'TypeScript', 'AWS', 'PostgreSQL', 'Docker'],
     matchScore: 87,
+    seniorityLevel: 'Sênior',
     matchFactors: {
       technical: ['Excelente aderência em React e TypeScript', 'Experiência sólida em Node.js'],
       experience: ['5+ anos de experiência compatível', 'Background em startups de tecnologia'],
@@ -54,6 +55,7 @@ const mockJobs = [
     description: 'Lidere a estratégia de produto para nossa plataforma SaaS B2B, trabalhando diretamente com stakeholders e equipes de engenharia.',
     requirements: ['Product Management', 'Analytics', 'SQL', 'Figma', 'Agile', 'B2B SaaS'],
     matchScore: 73,
+    seniorityLevel: 'Pleno',
     matchFactors: {
       technical: ['Conhecimento em Analytics e SQL'],
       experience: ['3+ anos em gestão de produto'],
@@ -72,6 +74,7 @@ const mockJobs = [
     description: 'Crie experiências digitais excepcionais para nossos clientes enterprise, liderando pesquisa de usuário e design de interfaces.',
     requirements: ['Figma', 'User Research', 'Prototyping', 'Design Systems', 'Adobe Creative'],
     matchScore: 91,
+    seniorityLevel: 'Pleno',
     matchFactors: {
       technical: ['Expert em Figma e Design Systems', 'Forte em User Research'],
       experience: ['Portfolio excepcional', '4+ anos em UX Design'],
@@ -120,6 +123,12 @@ const CandidateDashboard = () => {
   const swipeRotate = useTransform(swipeX, [-300, 0, 300], [-11, 0, 11]);
   const matchOpacity = useTransform(swipeX, [20, SWIPE_THRESHOLD], [0, 1]);
   const passOpacity = useTransform(swipeX, [-SWIPE_THRESHOLD, -20], [1, 0]);
+  const [candidateSeniority, setCandidateSeniority] = useState<string | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('candidate_profiles').select('*').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setCandidateSeniority((data as { senioridade_geral?: string | null } | null)?.senioridade_geral ?? null));
+  }, [user]);
   const swipeControls = useAnimationControls();
 
   useEffect(() => {
@@ -290,7 +299,7 @@ const CandidateDashboard = () => {
                     <>
                       {jobs[currentJobIndex + 1] && (
                         <div aria-hidden="true" className="pointer-events-none absolute inset-x-3 top-5 scale-[0.96] opacity-45">
-                          <JobCard job={jobs[currentJobIndex + 1]} showActions={false} variant="swipe" />
+                          <JobCard candidateSeniority={candidateSeniority} job={jobs[currentJobIndex + 1]} showActions={false} variant="swipe" />
                         </div>
                       )}
                       <motion.div
@@ -323,7 +332,7 @@ const CandidateDashboard = () => {
                         >
                           PASSAR
                         </motion.div>
-                        <JobCard
+                        <JobCard candidateSeniority={candidateSeniority}
                           job={currentJob}
                           onLike={handleLike}
                           onDislike={handleDislike}
@@ -386,7 +395,7 @@ const CandidateDashboard = () => {
                 {/* Jobs Grid */}
                 <div className="grid gap-6">
                   {jobs.map((job) => (
-                    <JobCard
+                    <JobCard candidateSeniority={candidateSeniority}
                       key={job.id}
                       job={job}
                       onLike={handleLike}

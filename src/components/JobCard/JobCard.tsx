@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { MatchScore } from '@/components/MatchScore/MatchScore';
+import { SeniorityThermometer } from '@/components/Seniority/SeniorityThermometer';
 import { MapPin, Building, Clock, Heart, X } from 'lucide-react';
 
 interface JobCardProps {
@@ -24,7 +25,9 @@ interface JobCardProps {
     };
     companyLogo?: string;
     postedAt: string;
+    seniorityLevel?: string | null;
   };
+  candidateSeniority?: string | null;
   onLike?: (jobId: string) => void;
   onDislike?: (jobId: string) => void;
   showActions?: boolean;
@@ -36,7 +39,8 @@ export const JobCard: React.FC<JobCardProps> = ({
   onLike,
   onDislike,
   showActions = true,
-  variant = 'swipe'
+  variant = 'swipe',
+  candidateSeniority
 }) => {
   const handleLike = () => {
     onLike?.(job.id);
@@ -67,6 +71,11 @@ export const JobCard: React.FC<JobCardProps> = ({
           </div>
 
           <p className="text-muted-foreground mb-4 line-clamp-2">{job.description}</p>
+          {job.seniorityLevel && (
+            <div className="mb-4 max-w-sm">
+              <SeniorityThermometer candidateLevel={candidateSeniority} requiredLevel={job.seniorityLevel} compact />
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-2 mb-4">
             {job.requirements.slice(0, 4).map((req, index) => (
@@ -160,6 +169,13 @@ export const JobCard: React.FC<JobCardProps> = ({
               </Badge>
             </div>
           </div>
+
+          {job.seniorityLevel && (
+            <div className="space-y-1">
+              <h4 className="text-sm font-medium">Sua senioridade vs. vaga</h4>
+              <SeniorityThermometer candidateLevel={candidateSeniority} requiredLevel={job.seniorityLevel} compact />
+            </div>
+          )}
 
           {/* Description */}
           <p className="text-sm text-muted-foreground line-clamp-3">
