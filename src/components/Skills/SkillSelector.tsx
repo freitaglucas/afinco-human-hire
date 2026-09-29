@@ -18,21 +18,13 @@ interface SkillSelectorProps {
 }
 
 const LevelPicker = ({ value, onChange }: { value: number; onChange: (n: number) => void }) => (
-  <div className="flex gap-1">
-    {[1, 2, 3, 4, 5].map((n) => (
-      <button
-        key={n}
-        type="button"
-        title={SKILL_LEVEL_LABELS[n]}
-        onClick={() => onChange(n)}
-        className={cn(
-          "h-7 w-7 rounded-md border text-xs font-semibold transition-colors",
-          n <= value ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground hover:border-primary"
-        )}
-      >
-        {n}
-      </button>
-    ))}
+  <div className="w-56 space-y-1 pt-1">
+    <Slider min={1} max={5} step={1} value={[value]} onValueChange={([n]) => onChange(n)} />
+    <div className="flex justify-between text-[10px] text-muted-foreground">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span key={n} className={cn(n === value && "font-semibold text-primary")}>{n}</span>
+      ))}
+    </div>
   </div>
 );
 

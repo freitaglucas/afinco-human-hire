@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { SkillSelector } from '@/components/Skills/SkillSelector';
 import { SeniorityThermometer } from '@/components/Seniority/SeniorityThermometer';
 import { fetchCandidateSkills, saveCandidateSkills, SelectedSkill, SENIORITY_LEVELS, SKILL_LEVEL_LABELS } from '@/lib/skills';
+import { ExperienceEditor, normalizeExperience, serializeExperience, periodOf, CompanyExperience } from '@/components/Experience/ExperienceEditor';
 import { CandidateStageModal } from '@/components/CandidateProfile/CandidateStageModal';
 import { 
   User, 
@@ -246,7 +247,7 @@ const CandidateProfile = () => {
   const [editMode, setEditMode] = useState(false);
   
   // States for dynamic form fields
-  const [experiences, setExperiences] = useState<any[]>([]);
+  const [experiences, setExperiences] = useState<CompanyExperience[]>([]);
   const [educations, setEducations] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [growthOpportunities, setGrowthOpportunities] = useState<any[]>([]);
@@ -380,7 +381,7 @@ const CandidateProfile = () => {
 
   useEffect(() => {
     if (candidateData) {
-      setExperiences(candidateData.experience || []);
+      setExperiences((candidateData.experience || []).map(normalizeExperience));
       setEducations(candidateData.education || []);
       setProjects(candidateData.projects || []);
       setGrowthOpportunities(candidateData.growthOpportunities || []);
@@ -444,7 +445,7 @@ const CandidateProfile = () => {
           linkedin_url: data.linkedinUrl || null,
           github_url: data.githubUrl || null,
           website_url: data.websiteUrl || null,
-          experience: experiences,
+          experience: experiences.map(serializeExperience) as unknown as never,
           education: educations,
           projects: projects,
           growth_opportunities: growthOpportunities,
@@ -483,7 +484,7 @@ const CandidateProfile = () => {
   };
 
   const addExperience = () => {
-    setExperiences([...experiences, { company: '', title: '', startDate: '', endDate: '', description: '', skills: [] }]);
+    setExperiences([...experiences, { company: '', roles: [{ title: '', seniority: '', startDate: '', endDate: '', description: '' }], skills: [] }]);
   };
 
   const removeExperience = (index: number) => {
@@ -717,6 +718,10 @@ const CandidateProfile = () => {
                     </div>
                   </div>
 
+                  <Separator />
+
+                  <ExperienceEditor value={experiences} onChange={setExperiences} />
+
                   <div className="flex gap-2 pt-4">
                     <Button 
                       type="button" 
@@ -928,88 +933,7 @@ const CandidateProfile = () => {
 
                   <Separator />
 
-                  {/* Experiências */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Briefcase className="w-5 h-5" />
-                        Experiências Profissionais
-                      </h3>
-                      <Button type="button" variant="outline" size="sm" onClick={addExperience}>
-                        + Adicionar
-                      </Button>
-                    </div>
-                    {experiences.map((exp, index) => (
-                      <Card key={index} className="p-4">
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-start">
-                            <h4 className="font-medium">Experiência {index + 1}</h4>
-                            <Button 
-                              type="button" 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => removeExperience(index)}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>Cargo</Label>
-                              <Input
-                                value={exp.title || ''}
-                                onChange={(e) => updateExperience(index, 'title', e.target.value)}
-                                placeholder="Ex: Desenvolvedor Frontend"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Empresa</Label>
-                              <Input
-                                value={exp.company || ''}
-                                onChange={(e) => updateExperience(index, 'company', e.target.value)}
-                                placeholder="Ex: TechCorp"
-                              />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>Data Início</Label>
-                              <Input
-                                type="month"
-                                value={exp.startDate || ''}
-                                onChange={(e) => updateExperience(index, 'startDate', e.target.value)}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Data Fim (deixe vazio se atual)</Label>
-                              <Input
-                                type="month"
-                                value={exp.endDate || ''}
-                                onChange={(e) => updateExperience(index, 'endDate', e.target.value)}
-                              />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Descrição</Label>
-                            <Textarea
-                              value={exp.description || ''}
-                              onChange={(e) => updateExperience(index, 'description', e.target.value)}
-                              placeholder="Descreva suas responsabilidades e conquistas..."
-                              rows={3}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Habilidades (separadas por vírgula)</Label>
-                            <Input
-                              value={Array.isArray(exp.skills) ? exp.skills.join(', ') : ''}
-                              onChange={(e) => updateExperience(index, 'skills', e.target.value.split(',').map(s => s.trim()))}
-                              placeholder="Ex: React, Node.js, TypeScript"
-                            />
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
+                  <ExperienceEditor value={experiences} onChange={setExperiences} />
 
                   <Separator />
 
@@ -1402,12 +1326,12 @@ const CandidateProfile = () => {
                     <div className="space-y-3">
                       <div>
                         <h4 className="font-semibold">{candidate.experience[0].title}</h4>
-                        <p className="text-sm text-muted-foreground">{candidate.experience[0].company} • {candidate.experience[0].period}</p>
+                        <p className="text-sm text-muted-foreground">{candidate.experience[0].company} • {periodOf(candidate.experience[0])}</p>
                       </div>
                       <p className="text-sm">{candidate.experience[0].description}</p>
                       <div className="flex flex-wrap gap-2 mt-3">
-                        {candidate.experience[0].skills?.map((skill, index) => (
-                          <Badge key={index} variant="outline">{skill}</Badge>
+                        {candidate.experience[0].skills?.map((skill: SelectedSkill | string, index: number) => (
+                          <Badge key={index} variant="outline">{typeof skill === 'string' ? skill : skill.nome}</Badge>
                         ))}
                       </div>
                     </div>
@@ -1486,29 +1410,27 @@ const CandidateProfile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {candidate.experience.map((exp, index) => (
-                    <div key={index} className="relative">
-                      {index > 0 && <div className="absolute left-4 -top-3 w-0.5 h-3 bg-border"></div>}
-                      <div className="flex items-start space-x-4">
-                        <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                          <Briefcase className="w-4 h-4 text-primary" />
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          <div>
-                            <h4 className="font-semibold">{exp.title}</h4>
-                            <p className="text-sm text-muted-foreground">{exp.company}</p>
-                            <p className="text-xs text-muted-foreground">{exp.period}</p>
+                  {candidate.experience.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma experiência cadastrada</p>}
+                  {candidate.experience.map(normalizeExperience).map((exp: CompanyExperience, index: number) => (
+                    <div key={index} className="space-y-3">
+                      <h4 className="font-semibold flex items-center gap-2"><Briefcase className="w-4 h-4 text-primary" />{exp.company || 'Empresa'}</h4>
+                      <div className="border-l-2 border-primary/30 pl-4 space-y-3">
+                        {[...exp.roles].reverse().map((role, r) => (
+                          <div key={r} className="relative">
+                            <span className="absolute -left-[23px] top-1.5 h-3 w-3 rounded-full bg-primary" />
+                            <p className="font-medium">{role.title}{role.seniority && <Badge variant="secondary" className="ml-2 text-xs">{role.seniority}</Badge>}</p>
+                            <p className="text-xs text-muted-foreground">{periodOf(role)}</p>
+                            {role.description && <p className="text-sm mt-1">{role.description}</p>}
                           </div>
-                          <p className="text-sm">{exp.description}</p>
-                          <div className="flex flex-wrap gap-1">
-                            {exp.skills.map((skill, skillIndex) => (
-                              <Badge key={skillIndex} variant="outline" className="text-xs">
-                                {skill}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
+                        ))}
                       </div>
+                      {exp.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {exp.skills.map((sk) => (
+                            <Badge key={sk.skill_id} variant="outline" className="text-xs">{sk.nome} · {sk.nivel}/5</Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </CardContent>
